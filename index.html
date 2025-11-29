@@ -3,25 +3,40 @@
 <head>
 <title>Skating Scoreboard</title>
 
-<!-- Tesseract OCR -->
+<!-- OCR -->
 <script src="https://cdn.jsdelivr.net/npm/tesseract.js@4.0.2/dist/tesseract.min.js"></script>
 
 <style>
     body {
-    background: transparent !important;
+        font-family: Arial, sans-serif;
+        background: transparent !important;
+        color:white;
+        padding:20px;
+        margin:0;
     }
     h1 { text-align:center; margin-top:20px; }
 
-    /* VIDEO BACKGROUND */
+    /*  VIDEO BACKGROUND */
     #bgVideo {
         position: fixed;
-        top: 0;
-        left: 0;
-        width: 100vw;
-        height: 100vh;
+        top:0;
+        left:0;
+        width:100vw;
+        height:100vh;
         object-fit: cover;
-        z-index: -1;
-        opacity: 0.35;
+        z-index:-2;
+        opacity:0.40; /* video clearly visible */
+    }
+
+    /* OVERLAY for readability */
+    #overlay {
+        position: fixed;
+        top:0; 
+        left:0;
+        width:100vw;
+        height:100vh;
+        background:rgba(0,0,0,0.25); 
+        z-index:-1;
     }
 
     input, select, button {
@@ -29,34 +44,42 @@
         font-size:16px;
         border-radius:8px; 
         border:none;
-        backdrop-filter: blur(6px);
+        backdrop-filter: blur(8px);
     }
-    button { background:#1e5bff; color:white; cursor:pointer; }
-    .danger { background:#ff4d4d; }
+    button {
+        background:#1e5bff;
+        color:white;
+        cursor:pointer;
+    }
+    .danger {
+        background:#ff4d4d;
+        color:white;
+    }
 
     .row { display:flex; flex-wrap:wrap; gap:10px; margin-bottom:15px; }
 
     table {
-    width:100%;
-    border-collapse:collapse;
-    margin-top:20px;
-    backdrop-filter: blur(8px);
-    background:rgba(0,0,0,0.12); /* Much lighter */
-    border-radius:10px;
-    overflow:hidden;
+        width:100%;
+        border-collapse:collapse;
+        margin-top:20px;
+        backdrop-filter: blur(8px);
+        background:rgba(0,0,0,0.12); /* transparent glass */
+        border-radius:10px;
+        overflow:hidden;
     }
+
     th {
-    background:rgba(15,23,42,0.45); /* less opaque */
-    padding:10px;
+        background:rgba(15,23,42,0.45);
+        padding:10px;
     }
 
     td {
-    border-bottom:1px solid rgba(255,255,255,0.15);
-    padding:8px;
-    text-align:center;
-    background:rgba(0,0,0,0.05);  /* much lighter */
-    backdrop-filter: blur(2px);
+        padding:8px;
+        text-align:center;
+        background:rgba(0,0,0,0.05);
+        border-bottom:1px solid rgba(255,255,255,0.10);
     }
+
     td.name {
         text-align:left;
         cursor:pointer;
@@ -67,21 +90,24 @@
     .edit-save { padding:6px 10px; background:#00c853; }
     .edit-cancel { padding:6px 10px; background:#ff4d4d; }
 
-    .gold   { background:#d4af37 !important; color:black !important; font-weight:bold; }
-    .silver { background:#c0c0c0 !important; color:black !important; font-weight:bold; }
-    .bronze { background:#cd7f32 !important; color:black !important; font-weight:bold; }
+    .gold   { background:#d4af37 !important; color:black !important; }
+    .silver { background:#c0c0c0 !important; color:black !important; }
+    .bronze { background:#cd7f32 !important; color:black !important; }
 
 </style>
 </head>
 
 <body>
 
-<!-- VIDEO BACKGROUND -->
+<!-- Background Video -->
 <video autoplay muted loop playsinline id="bgVideo">
     <source src="https://raw.githubusercontent.com/MandeepKourSardarni/Score-card--Ice-skating/main/Play1.mp4" type="video/mp4">
 </video>
 
-<h1>Skating Scoring System</h1>
+<!-- Overlay -->
+<div id="overlay"></div>
+
+<h1>Skating Scoreboard</h1>
 
 <!-- GROUP + ADD SKATER -->
 <div class="row">
@@ -102,7 +128,7 @@
 </div>
 
 <!-- RESET BUTTONS -->
-<div style="display:flex; justify-content:flex-end; gap:10px; margin-bottom:10px;">
+<div style="display:flex; justify-content:flex-end; gap:10px; margin-bottom:15px;">
     <button class="danger" onclick="resetGroup()">Reset This Group</button>
     <button class="danger" onclick="resetAll()">Reset All Groups</button>
 </div>
@@ -113,7 +139,7 @@
     <button onclick="processImage()">Upload Image</button>
 </div>
 
-<!-- SCORE TABLE -->
+<!-- SCOREBOARD -->
 <table id="scoreTable">
     <thead>
         <tr>
@@ -135,7 +161,7 @@
 
 <script>
 // ----------------------------------------------------
-// CORE CONFIG
+// CONFIG
 // ----------------------------------------------------
 const distances = ["400","500","800","1000","1500"];
 const points = {
@@ -147,10 +173,11 @@ const points = {
 let groups = {};
 let currentGroup = "Alpha";
 
+// init groups
 ["Alpha","Bravo","Charlie","Delta","Echo","Foxtrot","Golf","Hotel","India"]
 .forEach(g => groups[g] = { skaters: [], history: {} });
 
-// Load if exists
+// load saved data
 if (localStorage.getItem("groupsData"))
     groups = JSON.parse(localStorage.getItem("groupsData"));
 
@@ -178,13 +205,13 @@ function resetGroup() {
 }
 
 // ----------------------------------------------------
-// RESET ALL GROUPS
+// RESET ALL
 // ----------------------------------------------------
 function resetAll() {
     if (!confirm("Reset ALL groups?")) return;
 
     ["Alpha","Bravo","Charlie","Delta","Echo","Foxtrot","Golf","Hotel","India"]
-        .forEach(g => groups[g] = { skaters: [], history: {} });
+    .forEach(g => groups[g] = { skaters: [], history: {} });
 
     saveData();
     loadGroupTable();
@@ -250,7 +277,7 @@ function loadGroupTable() {
 }
 
 // ----------------------------------------------------
-// EDIT NAME (CLICK → EDIT)
+// EDIT NAME
 // ----------------------------------------------------
 function editName(row, oldName) {
     let cell = row.children[0];
@@ -286,7 +313,7 @@ function cancelEdit() {
 }
 
 // ----------------------------------------------------
-// DROPDOWN LOGIC
+// DROPDOWNS
 // ----------------------------------------------------
 function createDropdown(name, dist) {
     let dd = document.createElement("select");
@@ -314,13 +341,14 @@ function rebuildDropdowns() {
     document.querySelectorAll("select.position").forEach(dd=>{
         let old = dd.value;
         dd.innerHTML = `<option value="">-</option>`;
-        for (let i=1; i<=count; i++) dd.innerHTML += `<option>${i}</option>`;
+        for (let i=1; i<=count; i++)
+            dd.innerHTML += `<option>${i}</option>`;
         dd.value = old;
     });
 }
 
 // ----------------------------------------------------
-// UPDATE SCORE + RANKING
+– UPDATE SCORES + RANK
 // ----------------------------------------------------
 function updateScores() {
     let rows = document.querySelectorAll("#scoreTable tbody tr");
@@ -375,6 +403,7 @@ function undo(name) {
 // ----------------------------------------------------
 function deleteSkater(name) {
     let g = groups[currentGroup];
+
     g.skaters = g.skaters.filter(n => n !== name);
     delete g.history[name];
 
@@ -383,27 +412,28 @@ function deleteSkater(name) {
 }
 
 // ----------------------------------------------------
-// OCR NAME EXTRACTION
+// OCR UPLOAD
 // ----------------------------------------------------
 function processImage() {
     let file = document.getElementById("imgFile").files[0];
     if (!file) { alert("Choose an image!"); return; }
 
-    Tesseract.recognize(file,"eng").then(({data:{text}})=>{
+    Tesseract.recognize(file, "eng").then(({data:{text}})=>{
 
         text = text.replace(/[0-9]/g," ");
         text = text.replace(/\s+/g," ").trim();
 
-        let segments = text.split(/ (?=[A-Z])/);
+        let segs = text.split(/ (?=[A-Z])/);
 
-        segments.forEach(seg=>{
-            seg = seg.trim();
-            if (seg.length < 2) return;
+        segs.forEach(s=>{
+            s=s.trim();
+            if (s.length<2) return;
 
-            let words = seg.split(" ").map(w => w.replace(/[^A-Za-z]/g,""));
+            let parts = s.split(" ").map(w=>w.replace(/[^A-Za-z]/g,""));
 
-            if (words.length >=1 && words.length <= 3 && words.join("").length > 1)
-                addSkater(words.join(" "));
+            if (parts.length>=1 && parts.length<=3 && parts.join("").length>1) {
+                addSkater(parts.join(" "));
+            }
         });
 
         saveData();
