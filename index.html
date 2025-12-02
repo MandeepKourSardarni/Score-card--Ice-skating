@@ -16,7 +16,7 @@ body {
 }
 
 .bg {
-    background-image:url("https://raw.githubusercontent.com/MandeepKourSardarni/Score-card--Ice-skating/main/image.jpg");
+    background-image:url("https://video.cgtn.com/news/2021-01-23/Ice-surface-on-Beijing-2022-speed-skating-venue-finalized-XhM4M7DJ9C/video/428a494ca70b4bf6992c02980728dc40/428a494ca70b4bf6992c02980728dc40.jpg");
     background-size:cover;
     background-position:center;
     background-attachment:fixed;
@@ -113,70 +113,38 @@ button:hover { background:#5ab3ff; }
 }
 
 /* SCORE TABLE */
-
 table {
     width:95%;
     margin:25px auto;
-    border-collapse:separate;
-    border-spacing:0;
+    border-collapse:collapse;
     background:rgba(255,255,255,0.07);
     backdrop-filter:blur(12px);
     border-radius:14px;
     overflow:hidden;
-    table-layout:fixed;       /* ⭐ FIX COLUMN ALIGNMENT */
-    font-size:15px;
 }
 
-/* HEADERS */
+th, td {
+    text-align:center;
+    padding:12px;
+}
+
 th {
     background:rgba(0,60,120,0.7);
-    padding:12px;
     font-size:17px;
-    text-align:center;
-    font-weight:600;
 }
 
-/* CELLS */
-td {
-    padding:10px;
-    border-bottom:1px solid rgba(255,255,255,0.2);
-    text-align:center;        /* ⭐ ALIGN ALL CELLS */
-    vertical-align:middle;
-    overflow:hidden;
-    white-space:nowrap;
-}
-
-/* NAME COLUMN LEFT ALIGNED */
 td.name {
     text-align:left;
-    padding-left:14px;
-    font-weight:500;
+    padding-left:12px;
 }
-
-/* SELECT DROPDOWNS CENTERED */
-select.position {
-    width:60px;               /* ⭐ FIX WIDTH OF SELECT */
-    text-align:center;
-    padding-left:5px;
-}
-
-/* UNDO + DELETE BUTTONS CENTER */
-td button {
-    width:70px;
-    height:32px;
-    font-size:13px;
-    padding:0;
-    text-align:center;
-}
-
 
 /* 🔔 SLIDE-IN ERROR POPUP */
 #excelErrorPopup {
     position:fixed;
     left:50%;
-    top:-300px;                 /* hidden above screen */
+    top:-300px;
     transform:translateX(-50%);
-    width:90%; 
+    width:90%;
     max-width:420px;
     background:rgba(0,0,0,0.92);
     padding:20px;
@@ -184,8 +152,6 @@ td button {
     color:white;
     text-align:center;
     z-index:200;
-
-    /* Slide animation */
     animation-duration:0.7s;
     animation-fill-mode:forwards;
 }
@@ -194,6 +160,42 @@ td button {
     from { top:-300px; opacity:0; }
     to   { top:120px; opacity:1; }
 }
+
+/* EDIT NAME POPUP */
+#editNamePopup {
+    position:fixed;
+    top:50%; left:50%;
+    transform:translate(-50%,-50%);
+    background:#111;
+    padding:20px;
+    width:90%; max-width:400px;
+    border-radius:12px;
+    text-align:center;
+    display:none;
+    z-index:300;
+}
+
+#editNamePopup input {
+    width:80%;
+    margin-top:10px;
+    height:36px;
+}
+
+/* HELP POPUP */
+#helpPopup {
+    position:fixed;
+    top:50%; left:50%;
+    transform:translate(-50%,-50%);
+    width:90%; max-width:520px;
+    background:rgba(0,0,0,0.95);
+    padding:20px;
+    border-radius:12px;
+    color:white;
+    display:none;
+    z-index:300;
+}
+
+#helpPopup h2 { margin-top:0; font-size:24px; }
 
 </style>
 </head>
@@ -207,7 +209,7 @@ td button {
     <h1>Ice Skating Short Track Ranking Dashboard</h1>
 </div>
 
-<!-- ⭐⭐⭐ 1 ROW — 3 GLASS COLUMNS ⭐⭐⭐ -->
+<!-- ⭐⭐⭐ CONTROL ROW ⭐⭐⭐ -->
 <div class="control-row">
 
     <!-- COLUMN 1 -->
@@ -220,7 +222,6 @@ td button {
     <div class="control-col">
         <input id="skaterName" placeholder="Manually enter the name">
         <button onclick="addManual()">Add</button>
-
         <select id="addGroupSelect">
             <option>Alpha</option><option>Bravo</option><option>Charlie</option>
             <option>Delta</option><option>Echo</option><option>Foxtrot</option>
@@ -237,7 +238,6 @@ td button {
 
 </div>
 
-
 <!-- SELECT GROUP DISPLAY -->
 <div class="viewBar">
     <label style="font-size:18px;font-weight:bold;">Select Group to View Scoreboard</label><br>
@@ -247,7 +247,6 @@ td button {
         <option>Golf</option><option>Hotel</option><option>India</option>
     </select>
 </div>
-
 
 <!-- SCOREBOARD TABLE -->
 <table id="scoreTable">
@@ -261,7 +260,6 @@ td button {
     <tbody></tbody>
 </table>
 
-
 <!-- 🔔 ERROR POPUP -->
 <div id="excelErrorPopup">
     <p style="font-size:16px; line-height:1.5;">
@@ -271,40 +269,80 @@ td button {
         ALL THE BEST!
         </i></b>
     </p>
-
     <button onclick="closeExcelErrorPopup()" 
-            style="margin-top:12px; padding:10px 20px; 
-                   background:#1e90ff; color:white; 
-                   border:none; border-radius:6px; cursor:pointer;">
+            style="margin-top:12px; padding:10px 20px; background:#1e90ff; color:white; border:none; border-radius:6px; cursor:pointer;">
         CLOSE
     </button>
 </div>
 
+<!-- EDIT NAME POPUP -->
+<div id="editNamePopup">
+    <h2>Edit Name</h2>
+    <input id="editNameInput">
+    <br><br>
+    <button onclick="saveEditedName()">Save</button>
+    <button class="danger" onclick="closeEditName()">Cancel</button>
+</div>
 
 <!-- HELP POPUP -->
-<div id="helpPopup" style="display:none;">
+<div id="helpPopup">
     <h2>Instructions</h2>
-    <p>Upload Excel or add names manually. Select group. Enter race positions. Scores auto-update.</p>
+
+    <p>
+    <b>1️⃣ Uploading Participants (Excel)</b><br>
+    Select your Excel file → system reads names from the “Divisions” sheet.
+    </p>
+
+    <p>
+    <b>2️⃣ Add Names Manually</b><br>
+    Type name → choose group → Add.
+    </p>
+
+    <p>
+    <b>3️⃣ Editing Names</b><br>
+    Click on a player's name → popup opens → Edit → Save.
+    </p>
+
+    <p>
+    <b>4️⃣ Entering Results</b><br>
+    Use dropdowns to assign positions. Scores update automatically using official points.
+    </p>
+
+    <p>
+    <b>5️⃣ Ranking</b><br>
+    Players are sorted automatically. Top 3 get 🥇🥈🥉.
+    </p>
+
+    <p>
+    <b>6️⃣ Undo</b><br>
+    Removes last change for that player only.
+    </p>
+
+    <p>
+    <b>7️⃣ Reset</b><br>
+    Reset Group clears only the selected group.  
+    Reset All clears all groups.
+    </p>
+
     <button onclick="closeHelp()">Close</button>
 </div>
 
 <script>
 
 /* ------------------------------------------------------
-      SLIDE-IN POPUP FUNCTIONS
+      SLIDE-IN POPUP
 -------------------------------------------------------*/
 function showExcelErrorPopup() {
     const popup = document.getElementById("excelErrorPopup");
     popup.style.display = "block";
     popup.style.animationName = "slideDown";
 }
-
 function closeExcelErrorPopup() {
     document.getElementById("excelErrorPopup").style.display = "none";
 }
 
 /* ------------------------------------------------------
-      EXCEL UPLOAD WITH ERROR CHECK
+      EXCEL UPLOAD
 -------------------------------------------------------*/
 const validGroups = ["ALPHA","BRAVO","CHARLIE","DELTA","ECHO","FOXTROT","GOLF","HOTEL","INDIA"];
 
@@ -335,67 +373,55 @@ function uploadExcel() {
 
         for (let r=0; r<rows.length; r++) {
             let row = rows[r];
-
             if (!row) continue;
 
-            // Group detection
             let cell = row[7];
             if (typeof cell === "string") {
                 let G = cell.trim().toUpperCase();
                 if (validGroups.includes(G)) {
-                    detectedGroup = G.charAt(0) + G.slice(1).toLowerCase();
+                    detectedGroup = G.charAt(0)+G.slice(1).toLowerCase();
                     continue;
                 }
             }
 
-            // Name detection
-            // Extract name candidates (up to 4 possible column pairs)
             let cells = [
                 (row[1] || "").toString().trim(),
                 (row[2] || "").toString().trim(),
                 (row[3] || "").toString().trim(),
                 (row[4] || "").toString().trim()
-                    ];
-                    // Combine cells to detect headers like "First Name
-                    let combined = (cells.join(" ").toUpperCase()).replace(/\s+/g, " ").trim();
-                    // Header blacklist (single & multi-word)
-                    let headerBlacklist = [
-                        "FIRST","LAST","FULL","NAME",
-                        "FIRST NAME","LAST NAME","FULL NAME",
-                        "SKATER","ATHLETE","COMPETITOR","PARTICIPANT"
-                    ];
-                    // Skip if row contains header word
-                    let isHeader = headerBlacklist.some(h => combined.includes(h));
-                    if (isHeader) continue;
-                    // Try to detect real name (first + last)
-                    let name = null;
-                    if (isName(cells[0]) && isName(cells[1])) name = cells[0] + " " + cells[1];
-                    else if (isName(cells[1]) && isName(cells[2])) name = cells[1] + " " + cells[2]
-                    else if (isName(cells[2]) && isName(cells[3])) name = cells[2] + " " + cells[3];
-                    // If a valid name is found → add to grou
-                    if (name && detectedGroup) {
-                        name = cleanName(name);
-                        addSkaterToGroup(name, detectedGroup);
-                        addedCount++;
-                    }
+            ];
 
+            let combined = (cells.join(" ").toUpperCase()).replace(/\s+/g, " ").trim();
+            let headerBlacklist = [
+                "FIRST","LAST","FULL","NAME",
+                "FIRST NAME","LAST NAME","FULL NAME",
+                "SKATER","ATHLETE","COMPETITOR","PARTICIPANT"
+            ];
+
+            if (headerBlacklist.some(h => combined.includes(h))) continue;
+
+            let name = null;
+            if (isName(cells[0]) && isName(cells[1])) name = cells[0] + " " + cells[1];
+            else if (isName(cells[1]) && isName(cells[2])) name = cells[1] + " " + cells[2];
+            else if (isName(cells[2]) && isName(cells[3])) name = cells[2] + " " + cells[3];
+
+            if (name && detectedGroup) {
+                name = cleanName(name);
+                addSkaterToGroup(name, detectedGroup);
+                addedCount++;
+            }
         }
 
-        if (addedCount === 0) {
-            showExcelErrorPopup();
-        } else {
-            saveData();
-            loadGroupTable();
-        }
+        if (addedCount === 0) showExcelErrorPopup();
+        else { saveData(); loadGroupTable(); }
     };
 
     reader.readAsArrayBuffer(file);
 }
 
 /* ------------------------------------------------------
-      REST OF YOUR FUNCTIONS
+      MAIN DATA STRUCTURE
 -------------------------------------------------------*/
-
 let groups = {};
 ["Alpha","Bravo","Charlie","Delta","Echo","Foxtrot","Golf","Hotel","India"]
 .forEach(g => groups[g] = { skaters:[], history:{} });
@@ -411,8 +437,11 @@ const distances = ["400","500","800","1000","1500"];
 const points = {1:1000,2:816,3:666,4:543,5:443,6:362,7:295,8:241,9:196,10:160,
                 11:130,12:106,13:86,14:70,15:57};
 
-function saveData(){localStorage.setItem("groupsData", JSON.stringify(groups));}
+function saveData(){ localStorage.setItem("groupsData", JSON.stringify(groups)); }
 
+/* ------------------------------------------------------
+      GROUP SWITCHING / RESET
+-------------------------------------------------------*/
 function switchGroup(){
     currentGroup = document.getElementById("viewGroupSelect").value;
     loadGroupTable();
@@ -433,6 +462,9 @@ function resetAll(){
     loadGroupTable();
 }
 
+/* ------------------------------------------------------
+      ADD / CLEAN NAMES
+-------------------------------------------------------*/
 function cleanName(n){
     if (!n) return "";
     return n.replace(/[0-9]/g,"").replace(/\s+/g," ").trim();
@@ -458,16 +490,20 @@ function addSkaterToGroup(name, group){
     if (group === currentGroup) loadGroupTable();
 }
 
+/* ------------------------------------------------------
+      LOAD TABLE
+-------------------------------------------------------*/
 function loadGroupTable(){
     let tbody = document.querySelector("#scoreTable tbody");
     tbody.innerHTML = "";
 
     groups[currentGroup].skaters.forEach(name=>{
+
         let row = document.createElement("tr");
         row.dataset.name = name;
 
         row.innerHTML = `
-            <td class="name">${name}</td>
+            <td class="name" onclick="openEditName('${name}')">${name}</td>
             <td></td><td></td><td></td><td></td><td></td>
             <td class="total">0</td>
             <td class="rank">-</td>
@@ -487,6 +523,9 @@ function loadGroupTable(){
     updateScores();
 }
 
+/* ------------------------------------------------------
+      DROPDOWNS
+-------------------------------------------------------*/
 function createDropdown(name, dist){
     let dd = document.createElement("select");
     dd.className = "position";
@@ -516,6 +555,9 @@ function rebuildDropdowns(){
     });
 }
 
+/* ------------------------------------------------------
+      SCORES + RANKING + MEDALS
+-------------------------------------------------------*/
 function updateScores(){
     let rows = document.querySelectorAll("#scoreTable tbody tr");
     let anyScore = false;
@@ -534,8 +576,8 @@ function updateScores(){
 
     if (!anyScore){
         rows.forEach(row=>{
-            let nameCell = row.querySelector(".name");
-            nameCell.textContent = nameCell.textContent.replace(/🥇|🥈|🥉/g,"");
+            row.querySelector(".name").innerHTML =
+                row.dataset.name;
             row.querySelector(".rank").textContent = "-";
         });
         return;
@@ -547,17 +589,21 @@ function updateScores(){
 
     sorted.forEach((row,i)=>{
         let rank = i+1;
-        let nameCell = row.querySelector(".name");
-        nameCell.textContent = nameCell.textContent.replace(/🥇|🥈|🥉/g,"");
+        let baseName = row.dataset.name;  
+        let cell = row.querySelector(".name");
+
+        if (rank === 1) cell.innerHTML = "🥇 " + baseName;
+        else if (rank === 2) cell.innerHTML = "🥈 " + baseName;
+        else if (rank === 3) cell.innerHTML = "🥉 " + baseName;
+        else cell.innerHTML = baseName;
 
         row.querySelector(".rank").textContent = rank;
-
-        if (rank===1) nameCell.innerHTML = `🥇 ${nameCell.textContent}`;
-        if (rank===2) nameCell.innerHTML = `🥈 ${nameCell.textContent}`;
-        if (rank===3) nameCell.innerHTML = `🥉 ${nameCell.textContent}`;
     });
 }
 
+/* ------------------------------------------------------
+      UNDO + DELETE
+-------------------------------------------------------*/
 function undo(name){
     let g = groups[currentGroup];
     let row = document.querySelector(`tr[data-name="${name}"]`);
@@ -586,7 +632,40 @@ function deleteSkater(name){
     loadGroupTable();
 }
 
-/* HELP POPUP SIMPLE */
+/* ------------------------------------------------------
+      NAME EDIT POPUP
+-------------------------------------------------------*/
+let nameBeingEdited = null;
+
+function openEditName(name){
+    nameBeingEdited = name;
+    document.getElementById("editNameInput").value = name;
+    document.getElementById("editNamePopup").style.display = "block";
+}
+
+function closeEditName(){
+    nameBeingEdited = null;
+    document.getElementById("editNamePopup").style.display = "none";
+}
+
+function saveEditedName(){
+    let newName = cleanName(document.getElementById("editNameInput").value.trim());
+    if (!newName) return;
+
+    let group = groups[currentGroup];
+
+    let index = group.skaters.indexOf(nameBeingEdited);
+    if (index !== -1) group.skaters[index] = newName;
+
+    group.history[newName] = group.history[nameBeingEdited];
+    delete group.history[nameBeingEdited];
+
+    saveData();
+    closeEditName();
+    loadGroupTable();
+}
+
+/* HELP POPUP */
 function openHelp(){document.getElementById("helpPopup").style.display="block";}
 function closeHelp(){document.getElementById("helpPopup").style.display="none";}
 
