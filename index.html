@@ -16,7 +16,7 @@ body {
 }
 
 .bg {
-    background-image:url("https://github.com/MandeepKourSardarni/Ice-Skating-short-track-Ranking-Dashboard/blob/main/image.jpg");
+    background-image:url("https://raw.githubusercontent.com/MandeepKourSardarni/Ice-Skating-short-track-Ranking-Dashboard/main/image.jpg");
     background-size:cover;
     background-position:center;
     background-attachment:fixed;
@@ -555,11 +555,14 @@ function rebuildDropdowns(){
       SCORES + RANKING + MEDALS
 -------------------------------------------------------*/
 
-function updateScores() {
+
+
+
+    function updateScores() {
     let tbody = document.querySelector("#scoreTable tbody");
     let rows = [...tbody.querySelectorAll("tr")];
 
-    // STEP 1 — Compute scores
+    // STEP 1 — compute totals
     rows.forEach(row => {
         let total = 0;
         row.querySelectorAll("select.position").forEach(dd => {
@@ -569,27 +572,27 @@ function updateScores() {
         row.querySelector(".total").textContent = total;
     });
 
-    // STEP 2 — Split into 2 groups: scored and unscored
+    // STEP 2 — split into scored vs unscored
     let scored = rows.filter(r => Number(r.querySelector(".total").textContent) > 0);
     let unscored = rows.filter(r => Number(r.querySelector(".total").textContent) === 0);
 
-    // STEP 3 — Sort only scored rows
+    // STEP 3 — sort scored rows by total score
     scored.sort((a, b) =>
         Number(b.querySelector(".total").textContent) -
         Number(a.querySelector(".total").textContent)
     );
 
-    // STEP 4 — Clear the table and append sorted rows
+    // STEP 4 — clear tbody and rebuild order
     tbody.innerHTML = "";
     scored.forEach(r => tbody.appendChild(r));
     unscored.forEach(r => tbody.appendChild(r));
 
-    // STEP 5 — Assign ranks + medals ONLY to scored skaters
+    // STEP 5 — assign rank + medals ONLY for scored players
     scored.forEach((row, index) => {
         let rank = index + 1;
         let name = row.dataset.name;
 
-        // Assign medals only if score > 0
+        // only scored players get medals
         if (rank === 1) row.querySelector(".name").innerHTML = "🥇 " + name;
         else if (rank === 2) row.querySelector(".name").innerHTML = "🥈 " + name;
         else if (rank === 3) row.querySelector(".name").innerHTML = "🥉 " + name;
@@ -598,12 +601,13 @@ function updateScores() {
         row.querySelector(".rank").textContent = rank;
     });
 
-    // STEP 6 — Unscored skaters = no rank, no medal
+    // STEP 6 — unscored players = no rank, no medal
     unscored.forEach(row => {
         row.querySelector(".name").innerHTML = row.dataset.name;
         row.querySelector(".rank").textContent = "-";
     });
 }
+
 
 
 
