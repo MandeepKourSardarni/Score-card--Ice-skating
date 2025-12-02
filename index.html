@@ -242,22 +242,44 @@ td.name { text-align:left; padding-left:12px; }
         POPUPS
 --------------------------------------------------*/
 
+
 #excelErrorPopup {
     position:fixed;
     left:50%;
-    top:-300px;
+    top:140px;
     transform:translateX(-50%);
     width:90%;
     max-width:420px;
-    background:rgba(0,0,0,0.92);
+    background:rgba(0,0,0,0.85);
     padding:20px;
     border-radius:12px;
     color:white;
     text-align:center;
-    z-index:600;
-    animation-duration:0.7s;
-    animation-fill-mode:forwards;
+    z-index:99999;
+    display:none;
 }
+
+#excelErrorPopup .excelMsg {
+    font-family: Arial, sans-serif;
+    font-style: italic;
+    font-size:16px;
+    text-transform:none;
+    font-weight:normal;
+    margin-bottom:12px;
+}
+
+#excelErrorPopup button {
+    background:#1e90ff;
+    border:none;
+    padding:10px 20px;
+    border-radius:6px;
+    color:white;
+    cursor:pointer;
+}
+#excelErrorPopup button:hover {
+    background:#5ab3ff;
+}
+
 
 /* Glass Confirm Popup */
 .glassConfirm {
@@ -408,9 +430,13 @@ td.name { text-align:left; padding-left:12px; }
 
 <!-- Excel Error Popup -->
 <div id="excelErrorPopup">
-    <p><b><i>Excel file structure invalid.<br><br>Please check format.</i></b></p>
+    <p class="excelMsg">
+        Excel file could not be read.<br>
+        Please check the file format and try again.
+    </p>
     <button onclick="closeExcelErrorPopup()">Close</button>
 </div>
+
 
 <!-- Name Editor -->
 <div id="editNamePopup">
