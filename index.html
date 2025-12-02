@@ -37,7 +37,7 @@ body {
 }
 
 /* --------------------------------------------------
-      THEME SWITCH
+      SLIDING THEME TOGGLE
 --------------------------------------------------*/
 
 .theme-toggle-wrapper {
@@ -49,6 +49,7 @@ body {
 .theme-switch {
     --h: 24px;
     --w: 48px;
+
     width:var(--w);
     height:var(--h);
     border-radius:var(--h);
@@ -89,10 +90,39 @@ body {
 .dark .sun { display:block; }
 .dark .moon { display:none; }
 
-/* LIGHT / DARK */
+/* --------------------------------------------------
+    THEME OVERRIDES
+--------------------------------------------------*/
+
 .light-mode body { color:black !important; }
-.light-mode .viewBar { color:black !important; }
-.dark-mode .viewBar { color:white !important; }
+
+.light-mode .headerBar,
+.light-mode .control-col,
+.light-mode .viewBar,
+.light-mode table {
+    background:rgba(255,255,255,0.75) !important;
+    color:black !important;
+}
+
+.light-mode th {
+    background:rgba(0,80,160,0.8) !important;
+}
+
+/* Dark mode */
+
+.dark-mode body { color:white !important; }
+
+.dark-mode .headerBar,
+.dark-mode .control-col,
+.dark-mode .viewBar,
+.dark-mode table {
+    background:rgba(40,40,40,0.55) !important;
+    color:white !important;
+}
+
+.dark-mode th {
+    background:rgba(0,60,120,0.8) !important;
+}
 
 /* --------------------------------------------------
            HEADER BAR
@@ -107,6 +137,7 @@ body {
     border-radius:12px;
     backdrop-filter:blur(14px);
     box-shadow:0 0 16px rgba(0,0,0,0.4);
+    position:relative;
 }
 
 h1 {
@@ -143,12 +174,21 @@ h1 {
     box-shadow:0 0 16px rgba(0,0,0,0.4);
 }
 
+/* --------------------------------------------------
+      INPUTS + BUTTONS
+--------------------------------------------------*/
+
 input, select, button {
     height:36px;
     padding:4px 10px;
     border-radius:6px;
     border:none;
     font-size:14px;
+}
+
+input, select {
+    background:rgba(255,255,255,0.85);
+    color:black;
 }
 
 button {
@@ -163,20 +203,7 @@ button:hover { background:#5ab3ff; }
 .danger:hover { background:#ff7979 !important; }
 
 /* --------------------------------------------------
-   HEADING (H3 style)
---------------------------------------------------*/
-
-#excelHeading {
-    font-size:16px;
-    font-style:italic;
-    margin:8px 0 14px 0;
-    white-space:normal;
-    text-align:center;
-    display:none;  /* hidden until Excel loads */
-}
-
-/* --------------------------------------------------
-   SCOREBOARD
+   SCOREBOARD TABLE
 --------------------------------------------------*/
 
 .viewBar {
@@ -212,13 +239,14 @@ th {
 td.name { text-align:left; padding-left:12px; }
 
 /* --------------------------------------------------
-      ERROR POPUP
+        POPUPS
 --------------------------------------------------*/
+
 
 #excelErrorPopup {
     position:fixed;
     left:50%;
-    top:120px;
+    top:140px;
     transform:translateX(-50%);
     width:90%;
     max-width:420px;
@@ -232,8 +260,8 @@ td.name { text-align:left; padding-left:12px; }
 }
 
 #excelErrorPopup .excelMsg {
-    font-family:Arial, sans-serif;
-    font-style:italic;
+    font-family: Arial, sans-serif;
+    font-style: italic;
     font-size:16px;
     text-transform:none;
     font-weight:normal;
@@ -248,12 +276,64 @@ td.name { text-align:left; padding-left:12px; }
     color:white;
     cursor:pointer;
 }
-#excelErrorPopup button:hover { background:#5ab3ff; }
+#excelErrorPopup button:hover {
+    background:#5ab3ff;
+}
 
-/* --------------------------------------------------
-      EDIT POPUP
---------------------------------------------------*/
 
+/* Glass Confirm Popup */
+.glassConfirm {
+    display:none;
+    position:fixed;
+    inset:0;
+    background:rgba(0,0,0,0.45);
+    backdrop-filter:blur(6px);
+    z-index:500;
+    align-items:center;
+    justify-content:center;
+}
+
+.confirmBox {
+    width:90%;
+    max-width:360px;
+    padding:20px;
+    background:rgba(255,255,255,0.10);
+    border-radius:14px;
+    backdrop-filter:blur(18px);
+    color:white;
+    text-align:center;
+    box-shadow:0 0 18px rgba(0,0,0,0.4);
+}
+
+.confirmButtons {
+    margin-top:18px;
+    display:flex;
+    justify-content:space-between;
+}
+
+.confirmCancel,
+.confirmYes {
+    flex:1;
+    margin:0 6px;
+    padding:10px;
+    border:none;
+    border-radius:6px;
+    cursor:pointer;
+    font-size:15px;
+}
+
+.confirmCancel {
+    background:#555;
+}
+
+.confirmYes {
+    background:#1e90ff;
+}
+
+.confirmYes:hover { background:#5ab3ff; }
+.confirmCancel:hover { background:#777; }
+
+/* Edit Popup */
 #editNamePopup,
 #helpPopup {
     position:fixed;
@@ -320,25 +400,17 @@ td.name { text-align:left; padding-left:12px; }
 </div>
 
 <!-- --------------------------------------------------
-          VIEW BAR WITH HEADING + SELECT GROUP
+      SCOREBOARD TABLE
 -------------------------------------------------- -->
 
 <div class="viewBar">
-
-    <div id="excelHeading"></div> <!-- NEW HEADING APPEARS HERE -->
-
-    <label style="font-size:18px;">Select Group</label><br>
+    <label>Select Group</label><br>
     <select id="viewGroupSelect" onchange="switchGroup()" style="width:220px;margin-top:8px;">
         <option>Alpha</option><option>Bravo</option><option>Charlie</option>
         <option>Delta</option><option>Echo</option><option>Foxtrot</option>
         <option>Golf</option><option>Hotel</option><option>India</option>
     </select>
-
 </div>
-
-<!-- --------------------------------------------------
-      SCOREBOARD TABLE
--------------------------------------------------- -->
 
 <table id="scoreTable">
     <thead>
@@ -356,11 +428,18 @@ td.name { text-align:left; padding-left:12px; }
       POPUPS
 -------------------------------------------------- -->
 
+<!-- Excel Error Popup -->
 <div id="excelErrorPopup">
-    <p class="excelMsg">Excel file could not be read. Please check the file format and try again.</p>
+    <p class="excelMsg">
+        This Excel file could not be read, may be some glitch<br>
+        Please try entering names manually<br>
+        All the best ☺️
+    </p>
     <button onclick="closeExcelErrorPopup()">Close</button>
 </div>
 
+
+<!-- Name Editor -->
 <div id="editNamePopup">
     <h2>Edit Name</h2>
     <input id="editNameInput">
@@ -369,12 +448,24 @@ td.name { text-align:left; padding-left:12px; }
     <button class="danger" onclick="closeEditName()">Cancel</button>
 </div>
 
+<!-- Help -->
 <div id="helpPopup">
     <h2>Instructions</h2>
     <p>• Upload Excel to auto-add skaters.</p>
     <p>• Enter race positions to calculate points.</p>
-    <p>• Undo reverses last entry for that skater.</p>
+    <p>• Rankings update automatically.</p>
     <button onclick="closeHelp()">Close</button>
+</div>
+
+<!-- Glass Confirm Popup -->
+<div id="confirmPopup" class="glassConfirm">
+    <div class="confirmBox">
+        <p id="confirmMessage">Are you sure?</p>
+        <div class="confirmButtons">
+            <button class="confirmCancel" onclick="closeConfirm(false)">Cancel</button>
+            <button class="confirmYes" onclick="closeConfirm(true)">Yes</button>
+        </div>
+    </div>
 </div>
 
 <!-- --------------------------------------------------
@@ -384,16 +475,16 @@ td.name { text-align:left; padding-left:12px; }
 <script>
 
 /* ==================================================
-      THEME SWITCH
+      THEME TOGGLE (SLIDER)
 =================================================== */
 
 const toggleBtn = document.getElementById("themeToggle");
 let savedTheme = localStorage.getItem("theme") || "dark";
+
 applyTheme(savedTheme);
 
 toggleBtn.onclick = () => {
-    let newTheme =
-      document.body.classList.contains("dark-mode") ? "light" : "dark";
+    let newTheme = document.body.classList.contains("dark-mode") ? "light" : "dark";
     applyTheme(newTheme);
 };
 
@@ -411,12 +502,14 @@ function applyTheme(mode) {
 }
 
 /* ==================================================
-      ERROR POPUP
+      EXCEL ERROR POPUP
 =================================================== */
 
 function showExcelErrorPopup() {
     const popup = document.getElementById("excelErrorPopup");
     popup.style.display = "block";
+    popup.style.animationName = "slideDown";
+    popup.style.top = "120px";
 }
 
 function closeExcelErrorPopup() {
@@ -424,7 +517,24 @@ function closeExcelErrorPopup() {
 }
 
 /* ==================================================
-      EXCEL HELPERS
+      CUSTOM GLASS CONFIRM
+=================================================== */
+
+let confirmCallback = null;
+
+function showConfirm(message, callback) {
+    document.getElementById("confirmMessage").textContent = message;
+    document.getElementById("confirmPopup").style.display = "flex";
+    confirmCallback = callback;
+}
+
+function closeConfirm(result) {
+    document.getElementById("confirmPopup").style.display = "none";
+    if (confirmCallback) confirmCallback(result);
+}
+
+/* ==================================================
+      EXCEL VALIDATION HELPERS
 =================================================== */
 
 const validGroups = [
@@ -441,7 +551,7 @@ function isName(x){
 }
 
 /* ==================================================
-      EXCEL UPLOAD + HEADING EXTRACTION
+      EXCEL UPLOAD — ORIGINAL LOGIC RESTORED
 =================================================== */
 
 function uploadExcel(){
@@ -454,43 +564,7 @@ function uploadExcel(){
         let data=new Uint8Array(e.target.result);
         let workbook=XLSX.read(data,{type:'array'});
 
-        let sheetNames = ["Club","Clubs","Divisions"];
-        let headingText = "";
-
-        for (let s of sheetNames) {
-            let sheet = workbook.Sheets[s];
-            if (!sheet) continue;
-
-            let a1 = sheet["A1"] ? String(sheet["A1"].v).trim() : "";
-
-            if (a1.length > 10) {
-                headingText = a1;
-                break;
-            }
-
-            let range = XLSX.utils.decode_range(sheet["!ref"]);
-            for (let R = range.s.r; R <= range.e.r; R++) {
-                for (let C = range.s.c; C <= range.e.c; C++) {
-                    let cellAddress = XLSX.utils.encode_cell({ r: R, c: C });
-                    let cell = sheet[cellAddress];
-                    if (cell && typeof cell.v === "string" && cell.v.trim().length > 10) {
-                        headingText = cell.v.trim();
-                        break;
-                    }
-                }
-                if (headingText) break;
-            }
-
-            if (headingText) break;
-        }
-
-        if (headingText) {
-            let h = document.getElementById("excelHeading");
-            h.textContent = headingText;
-            h.style.display = "block";
-        }
-
-        let sheet = workbook.Sheets["Divisions"];
+        let sheet=workbook.Sheets["Divisions"];
         if(!sheet)return showExcelErrorPopup();
 
         let rows=XLSX.utils.sheet_to_json(sheet,{header:1});
@@ -545,24 +619,16 @@ function uploadExcel(){
 }
 
 /* ==================================================
-      DATA STRUCTURE
+      MAIN DATA STRUCTURE
 =================================================== */
 
 let groups={};
-let savedScores={};
-
 ["Alpha","Bravo","Charlie","Delta","Echo",
  "Foxtrot","Golf","Hotel","India"]
-.forEach(g=> {
-    groups[g] = { skaters:[], history:{} };
-    savedScores[g] = {};  // NEW: save scores so switching groups keeps data
-});
+.forEach(g=>groups[g]={skaters:[],history:{}});
 
 if(localStorage.getItem("groupsData")){
     groups=JSON.parse(localStorage.getItem("groupsData"));
-}
-if(localStorage.getItem("savedScores")){
-    savedScores=JSON.parse(localStorage.getItem("savedScores"));
 }
 
 let currentGroup="Alpha";
@@ -577,30 +643,30 @@ const points={
 
 function saveData(){
     localStorage.setItem("groupsData",JSON.stringify(groups));
-    localStorage.setItem("savedScores",JSON.stringify(savedScores));
 }
 
 /* ==================================================
-      RESET
+      RESET FUNCTIONS (NOW USING GLASS POPUP)
 =================================================== */
 
 function resetGroup(){
-    if (!confirm("Reset this group?")) return;
-    groups[currentGroup]={skaters:[],history:{}};
-    savedScores[currentGroup]={};
-    saveData();
-    loadGroupTable();
+    showConfirm("Reset this group?", function(yes){
+        if(!yes)return;
+        groups[currentGroup]={skaters:[],history:{}};
+        saveData();
+        loadGroupTable();
+    });
 }
 
 function resetAll(){
-    if (!confirm("Reset all groups?")) return;
-    ["Alpha","Bravo","Charlie","Delta","Echo",
-     "Foxtrot","Golf","Hotel","India"].forEach(g=>{
-        groups[g]={skaters:[],history:{}};
-        savedScores[g]={};
+    showConfirm("Reset all groups?", function(yes){
+        if(!yes)return;
+        ["Alpha","Bravo","Charlie","Delta","Echo",
+         "Foxtrot","Golf","Hotel","India"]
+         .forEach(g=>groups[g]={skaters:[],history:{}});
+        saveData();
+        loadGroupTable();
     });
-    saveData();
-    loadGroupTable();
 }
 
 /* ==================================================
@@ -626,21 +692,17 @@ function addSkaterToGroup(name,group){
     let G=groups[group];
     if(!G.skaters.includes(name)){
         G.skaters.push(name);
-
         G.history[name]={
             distHistory:{ "400":[], "500":[], "800":[], "1000":[], "1500":[] },
             stack:[]
         };
-
-        if (!savedScores[group][name])
-            savedScores[group][name] = { "400":"", "500":"", "800":"", "1000":"", "1500":"" };
     }
     saveData();
     if(group===currentGroup) loadGroupTable();
 }
 
 /* ==================================================
-      SWITCH GROUP
+      TABLE BUILD
 =================================================== */
 
 function switchGroup(){
@@ -648,18 +710,11 @@ function switchGroup(){
     loadGroupTable();
 }
 
-/* ==================================================
-      BUILD TABLE
-=================================================== */
-
 function loadGroupTable(){
     let tbody=document.querySelector("#scoreTable tbody");
     tbody.innerHTML="";
 
-    let G = groups[currentGroup];
-    let SG = savedScores[currentGroup];
-
-    G.skaters.forEach(name=>{
+    groups[currentGroup].skaters.forEach(name=>{
         let row=document.createElement("tr");
         row.dataset.name=name;
 
@@ -676,14 +731,7 @@ function loadGroupTable(){
 
         distances.forEach((dist,i)=>{
             let cell=row.children[i+1];
-            let dd=createDropdown(name,dist);
-
-            if (SG[name] && SG[name][dist] !== "")
-                dd.value = SG[name][dist];
-
-            dd.setAttribute("data-last", dd.value);
-
-            cell.appendChild(dd);
+            cell.appendChild(createDropdown(name,dist));
         });
 
         tbody.appendChild(row);
@@ -694,7 +742,7 @@ function loadGroupTable(){
 }
 
 /* ==================================================
-      DROPDOWNS + SCORE SAVING
+      DROPDOWNS
 =================================================== */
 
 function createDropdown(name,dist){
@@ -711,13 +759,12 @@ function createDropdown(name,dist){
         let prevVal = dd.getAttribute("data-last") || "";
         let newVal = dd.value;
 
+        groups[currentGroup].history[name].distHistory[dist].push(prevVal);
         groups[currentGroup].history[name].stack.push({
             dist:dist,
             prev:prevVal,
             current:newVal
         });
-
-        savedScores[currentGroup][name][dist] = newVal;
 
         dd.setAttribute("data-last", newVal);
 
@@ -740,7 +787,7 @@ function rebuildDropdowns(){
 }
 
 /* ==================================================
-      SCORE CALCULATIONS
+      SCORE CALC + SORTING + MEDALS
 =================================================== */
 
 function updateScores(){
@@ -748,14 +795,11 @@ function updateScores(){
     let rows=[...tbody.querySelectorAll("tr")];
 
     rows.forEach(row=>{
-        let name=row.dataset.name;
         let total=0;
-
-        distances.forEach(dist=>{
-            let val = savedScores[currentGroup][name][dist];
-            if(points[val]) total += points[val];
+        row.querySelectorAll("select.position").forEach(dd=>{
+            let pos=Number(dd.value);
+            if(points[pos]) total+=points[pos];
         });
-
         row.querySelector(".total").textContent=total;
     });
 
@@ -790,7 +834,7 @@ function updateScores(){
 }
 
 /* ==================================================
-      UNDO (per skater, per last action)
+      UNDO (CORRECT + STABLE)
 =================================================== */
 
 function undo(name){
@@ -809,29 +853,25 @@ function undo(name){
     dd.value = prevVal || "";
     dd.setAttribute("data-last", prevVal || "");
 
-    savedScores[currentGroup][name][dist] = prevVal || "";
-
     updateScores();
     saveData();
 }
 
 /* ==================================================
-      DELETE SKATER
+      DELETE
 =================================================== */
 
 function deleteSkater(name){
-    groups[currentGroup].skaters =
-      groups[currentGroup].skaters.filter(n=>n!==name);
-
-    delete groups[currentGroup].history[name];
-    delete savedScores[currentGroup][name];
+    let g=groups[currentGroup];
+    g.skaters=g.skaters.filter(n=>n!==name);
+    delete g.history[name];
 
     saveData();
     loadGroupTable();
 }
 
 /* ==================================================
-      EDIT NAME
+      NAME EDIT
 =================================================== */
 
 let nameBeingEdited=null;
@@ -852,15 +892,11 @@ function saveEditedName(){
     if(!newName)return;
 
     let group=groups[currentGroup];
+    let index=group.skaters.indexOf(nameBeingEdited);
+    if(index!==-1)group.skaters[index]=newName;
 
-    let idx=group.skaters.indexOf(nameBeingEdited);
-    if(idx!==-1)group.skaters[idx]=newName;
-
-    groups[currentGroup].history[newName]=groups[currentGroup].history[nameBeingEdited];
-    delete groups[currentGroup].history[nameBeingEdited];
-
-    savedScores[currentGroup][newName]=savedScores[currentGroup][nameBeingEdited];
-    delete savedScores[currentGroup][nameBeingEdited];
+    group.history[newName]=group.history[nameBeingEdited];
+    delete group.history[nameBeingEdited];
 
     saveData();
     closeEditName();
