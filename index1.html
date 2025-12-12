@@ -388,58 +388,6 @@ td.name { text-align:left; padding-left:12px; }
     box-shadow: 0 4px 10px rgba(0,0,0,0.45);
     cursor: pointer;
 }
-
-/* ==================================================
-   🎁 GIFT (PAYPAL) BUTTON + POPUP  (NEW)
-=================================================== */
-.giftBtn{
-    background:rgba(255,255,255,0.15);
-    border:1px solid rgba(255,255,255,0.22);
-    backdrop-filter:blur(10px);
-    height:36px;
-    width:36px;
-    border-radius:10px;
-    cursor:pointer;
-    display:flex;
-    align-items:center;
-    justify-content:center;
-    font-size:18px;
-    line-height:1;
-}
-.giftBtn:hover{ background:rgba(255,255,255,0.25); }
-
-#paypalPopup{
-    display:none;
-    position:fixed;
-    inset:0;
-    background:rgba(0,0,0,0.55);
-    backdrop-filter:blur(6px);
-    z-index:6000;
-    align-items:center;
-    justify-content:center;
-}
-.paypalBox{
-    width:90%;
-    max-width:380px;
-    padding:20px;
-    background:rgba(255,255,255,0.12);
-    border-radius:14px;
-    text-align:center;
-    color:white;
-}
-.paypalLinks{
-    display:flex;
-    gap:10px;
-    justify-content:center;
-    flex-wrap:wrap;
-    margin-top:12px;
-}
-.paypalLinks a{
-    text-decoration:none;
-}
-.paypalLinks button{
-    height:36px;
-}
 </style>
 </head>
 
@@ -448,7 +396,7 @@ td.name { text-align:left; padding-left:12px; }
 <!-- ⭐ BUY ME A COFFEE TOP-RIGHT BUTTON -->
 <div id="bmc-button">
     <a href="https://buymeacoffee.com/mandeepkour" target="_blank">
-        <img src="https://cdn.buymeacoffee.com/buttons/v2/default-yellow.png"
+        <img src="https://cdn.buymeacoffee.com/buttons/v2/default-yellow.png" 
              alt="Buy Me A Coffee">
     </a>
 </div>
@@ -485,16 +433,13 @@ td.name { text-align:left; padding-left:12px; }
         <!-- Renamed dynamic distance button -->
         <button id="addDistanceBtn" onclick="openActionsPopup()">Actions</button>
 
-        <div class="theme-toggle-wrapper" style="gap:10px;">
+        <div class="theme-toggle-wrapper">
             <button id="themeToggle" class="theme-switch">
                 <div class="slider">
                     <span class="moon">🌙</span>
                     <span class="sun">☀️</span>
                 </div>
             </button>
-
-            <!-- 🎁 PayPal button -->
-            <button class="giftBtn" onclick="openPaypalPopup()" title="Support via PayPal">🎁</button>
         </div>
     </div>
 
@@ -523,6 +468,7 @@ td.name { text-align:left; padding-left:12px; }
 </table>
 
 <!-- POPUPS -->
+<!-- CLEAN GLASS PANEL POPUP -->
 <!-- CUTE GLASS ERROR POPUP -->
 <div id="excelErrorPopup">
     <div class="excelErrorBox">
@@ -540,6 +486,8 @@ td.name { text-align:left; padding-left:12px; }
         <button onclick="closeExcelErrorPopup()">Got it 😊</button>
     </div>
 </div>
+
+
 
 <div id="editNamePopup">
     <h2>Edit Name</h2>
@@ -619,25 +567,6 @@ td.name { text-align:left; padding-left:12px; }
         <button onclick="saveManagedDistances()">Save</button>
         <button class="danger" onclick="closeManageDistances()">Close</button>
     </div>
-</div>
-
-<!-- ✅ PAYPAL POPUP (NEW) -->
-<div id="paypalPopup">
-  <div class="paypalBox">
-    <h2 style="margin:0 0 8px 0;">Support this dashboard 💙</h2>
-    <p style="margin:0; opacity:0.95;">If this helps you, you can donate via PayPal</p>
-
-    <div class="paypalLinks">
-      <!-- Replace MandeepKour with your PayPal.me username -->
-      <a href="https://paypal.me/MandeepKour/2" target="_blank"><button>$2</button></a>
-      <a href="https://paypal.me/MandeepKour/5" target="_blank"><button>$5</button></a>
-      <a href="https://paypal.me/MandeepKour/10" target="_blank"><button>$10</button></a>
-      <a href="https://paypal.me/MandeepKour" target="_blank"><button>Custom</button></a>
-    </div>
-
-    <br>
-    <button class="danger" onclick="closePaypalPopup()">Close</button>
-  </div>
 </div>
 
 <script>
@@ -1279,16 +1208,6 @@ function saveManagedDistances(){
 
     closeManageDistances();
     loadGroupTable();
-}
-
-/* ==================================================
-      🎁 PAYPAL POPUP (NEW)
-=================================================== */
-function openPaypalPopup(){
-    document.getElementById("paypalPopup").style.display = "flex";
-}
-function closePaypalPopup(){
-    document.getElementById("paypalPopup").style.display = "none";
 }
 
 /* ==================================================
