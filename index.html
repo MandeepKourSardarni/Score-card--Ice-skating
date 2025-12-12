@@ -6,11 +6,9 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 
 <style>
-
 /* --------------------------------------------------
     GLOBAL + BACKGROUND
 --------------------------------------------------*/
-
 body {
     margin:0;
     padding:0;
@@ -39,7 +37,6 @@ body {
 /* --------------------------------------------------
       SLIDING THEME TOGGLE
 --------------------------------------------------*/
-
 .theme-toggle-wrapper {
     display:flex;
     align-items:center;
@@ -49,7 +46,6 @@ body {
 .theme-switch {
     --h: 24px;
     --w: 48px;
-
     width:var(--w);
     height:var(--h);
     border-radius:var(--h);
@@ -78,29 +74,25 @@ body {
 .theme-switch.dark {
     background:#222;
 }
-
 .theme-switch.dark .slider {
     transform:translateX(24px);
-    background:#fff;
 }
 
 .sun { display:none; }
 .moon { display:block; }
-
 .dark .sun { display:block; }
 .dark .moon { display:none; }
 
 /* --------------------------------------------------
     THEME OVERRIDES
 --------------------------------------------------*/
-
 .light-mode body { color:black !important; }
 
 .light-mode .headerBar,
 .light-mode .control-col,
 .light-mode .viewBar,
 .light-mode table {
-    background:rgba(255,255,255,0.75) !important;
+    background:rgba(255, 255, 255, 0.315) !important;
     color:black !important;
 }
 
@@ -125,7 +117,6 @@ body {
 /* --------------------------------------------------
            HEADER BAR
 --------------------------------------------------*/
-
 .headerBar {
     width:90%;
     margin:25px auto 20px auto;
@@ -147,7 +138,6 @@ h1 {
 /* --------------------------------------------------
           CONTROL PANEL
 --------------------------------------------------*/
-
 .control-row {
     width:95%;
     display:flex;
@@ -159,7 +149,7 @@ h1 {
 
 .control-col {
     flex:1;
-    min-width:290px;
+    min-width:260px;
     padding:10px 14px;
     background:rgba(255,255,255,0.09);
     border-radius:12px;
@@ -174,7 +164,6 @@ h1 {
 /* --------------------------------------------------
       INPUTS + BUTTONS
 --------------------------------------------------*/
-
 input, select, button {
     height:36px;
     padding:4px 10px;
@@ -199,10 +188,15 @@ button:hover { background:#5ab3ff; }
 .danger { background:#ff4d4d !important; }
 .danger:hover { background:#ff7979 !important; }
 
+/* Make Actions button above glass */
+#addDistanceBtn {
+    position:relative;
+    z-index:2000;
+}
+
 /* --------------------------------------------------
    SCOREBOARD TABLE
 --------------------------------------------------*/
-
 .viewBar {
     width:90%;
     margin:25px auto 0 auto;
@@ -238,7 +232,6 @@ td.name { text-align:left; padding-left:12px; }
 /* --------------------------------------------------
         POPUPS
 --------------------------------------------------*/
-
 #excelErrorPopup {
     position:fixed;
     left:50%;
@@ -318,13 +311,13 @@ td.name { text-align:left; padding-left:12px; }
 .confirmCancel:hover { background:#777; }
 .confirmYes:hover { background:#5ab3ff; }
 
-/* Edit Popup */
+/* Edit & Help popups */
 #editNamePopup,
 #helpPopup {
     position:fixed;
     top:50%; left:50%;
     transform:translate(-50%,-50%);
-    background:#111;
+    background:#010114;
     padding:20px;
     width:90%; max-width:400px;
     border-radius:12px;
@@ -334,10 +327,95 @@ td.name { text-align:left; padding-left:12px; }
     z-index:300;
 }
 
+/* ADD / MANAGE DISTANCE + ACTIONS POPUPS */
+#distancePopup,
+#manageDistancesPopup,
+#actionsPopup {
+    display:none;
+    position:fixed;
+    inset:0;
+    background:rgba(0,0,0,0.55);
+    backdrop-filter:blur(6px);
+    color:white;
+    z-index:5000;
+    align-items:center;
+    justify-content:center;
+}
+
+.distanceBox {
+    width:90%;
+    max-width:380px;
+    padding:20px;
+    background:rgba(255,255,255,0.1);
+    border-radius:14px;
+    text-align:center;
+}
+
+.distanceBox input {
+    width:80%;
+    margin-top:10px;
+    font-size:16px;
+}
+
+/* Manage distances rows */
+.distanceRow {
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    gap:8px;
+    margin:6px 0;
+}
+
+.distanceRow input {
+    width:80px;
+    text-align:center;
+}
+
+/* --------------------------------------------------
+   BUY ME A COFFEE FLOATING BUTTON
+--------------------------------------------------*/
+
+#bmc-button {
+    position: fixed;
+    top: 18px;
+    right: 18px;
+    z-index: 10000;
+}
+
+#bmc-button img {
+    height: 48px;
+    width: auto;
+    border-radius: 10px;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.45);
+    cursor: pointer;
+}
+
+/* On small screens, move it away from the heading */
+@media (max-width: 600px) {
+    #bmc-button {
+        top: auto;
+        bottom: 16px;
+        right: 16px;
+    }
+
+    /* Optional: slightly smaller button on phone */
+    #bmc-button img {
+        height: 40px;
+    }
+}
+
 </style>
 </head>
 
 <body>
+
+<!-- ⭐ BUY ME A COFFEE TOP-RIGHT BUTTON -->
+<div id="bmc-button">
+    <a href="https://buymeacoffee.com/mandeepkour" target="_blank">
+        <img src="https://cdn.buymeacoffee.com/buttons/v2/default-yellow.png" 
+             alt="Buy Me A Coffee">
+    </a>
+</div>
 
 <div class="bg"></div>
 <div class="bgOverlay"></div>
@@ -368,6 +446,8 @@ td.name { text-align:left; padding-left:12px; }
         <button class="danger" onclick="resetGroup()">Reset Group</button>
         <button class="danger" onclick="resetAll()">Reset All Groups</button>
         <button onclick="openHelp()">Help</button>
+        <!-- Renamed dynamic distance button -->
+        <button id="addDistanceBtn" onclick="openActionsPopup()">Actions</button>
 
         <div class="theme-toggle-wrapper">
             <button id="themeToggle" class="theme-switch">
@@ -381,10 +461,8 @@ td.name { text-align:left; padding-left:12px; }
 
 </div>
 
-<!-- VIEW BAR WITH HEADING + SELECT GROUP -->
+<!-- VIEW BAR -->
 <div class="viewBar">
-
-    <!-- ✔ NEW HEADING INSERTED HERE -->
     <div id="excelHeading"
          style="display:none; font-size:18px; margin-bottom:12px; white-space:normal;">
     </div>
@@ -400,25 +478,32 @@ td.name { text-align:left; padding-left:12px; }
 <!-- SCOREBOARD TABLE -->
 <table id="scoreTable">
     <thead>
-        <tr>
-            <th>Name</th>
-            <th>400</th><th>500</th><th>800</th><th>1000</th><th>1500</th>
-            <th>Total</th><th>Rank</th>
-            <th>Undo / Delete</th>
-        </tr>
+        <tr id="headerRow"></tr>
     </thead>
     <tbody></tbody>
 </table>
 
 <!-- POPUPS -->
+<!-- CLEAN GLASS PANEL POPUP -->
+<!-- CUTE GLASS ERROR POPUP -->
 <div id="excelErrorPopup">
-    <p class="excelMsg">
-        This Excel file could not be read, may be some glitch<br>
-        Please try entering names manually<br>
-        All the best ☺️
-    </p>
-    <button onclick="closeExcelErrorPopup()">Close</button>
+    <div class="excelErrorBox">
+        <h3>⚠️ Oops!</h3>
+
+        <p>
+            The Excel file looks a little <b>glitchy</b> or not in the expected format
+        </p>
+
+        <p style="margin-top:8px;">
+            You can try uploading again<br>
+            or enter the names manually — both work!
+        </p>
+
+        <button onclick="closeExcelErrorPopup()">Got it 😊</button>
+    </div>
 </div>
+
+
 
 <div id="editNamePopup">
     <h2>Edit Name</h2>
@@ -432,18 +517,20 @@ td.name { text-align:left; padding-left:12px; }
     <h2>Instructions</h2>
 
     <p>📄 Start by uploading the official Excel file with clubs and divisions</p>
-    <p>✏️ You can also type skater names manually if that’s easier</p>
+    <p>✏️ You can also type skater names, and select group manually if that’s easier</p>
 
-    <p>🏅 Choose each skater’s race positions to update scores and rankings</p>
+    <p>🏅 Choose each skater’s race position in the race</p>
     <p>✨ The dashboard automatically calculates scores & updates rank instantly</p>
 
+    <p>⚙️ Use the “Actions” button to add, edit or delete race distances (points stay the same)</p>
+
     <p>📌 You can switch between different groups anytime — each group keeps its own list</p>
-    <p>📌 All entries are safely stored on your device so you can return anytime</p>
+    <p>📌 All entries are safely stored on YOUR DEVICE so you can return anytime</p>
 
     <p>↩️ Made a mistake? You can undo or edit any name or position</p>
-    <p>🗑️ To start fresh, reset the current group — or use “Reset All Groups” for a complete clean slate</p>
+    <p>🗑️ To start fresh with the group, reset the current group — or use “RESET ALL GROUPS” for a complete clean slate</p>
 
-    <p>💙 Hope this makes tracking your skaters simple and fun!</p>
+    <p>Hope this makes tracking your skaters simple and fun!</p>
     <p>💙 All the Best 💙</p>
 
     <button onclick="closeHelp()">Close</button>
@@ -460,13 +547,48 @@ td.name { text-align:left; padding-left:12px; }
     </div>
 </div>
 
-<!-- JAVASCRIPT -->
-<script>
+<!-- Actions Popup -->
+<div id="actionsPopup">
+    <div class="distanceBox">
+        <h2>Actions</h2>
+        <button onclick="openDistanceFromActions()">➕ Add New Distance</button>
+        <br><br>
+        <button onclick="openManageFromActions()">✏️ Edit / Delete Distances</button>
+        <br><br>
+        <button class="danger" onclick="closeActionsPopup()">Close</button>
+    </div>
+</div>
 
+<!-- ADD DISTANCE POPUP -->
+<div id="distancePopup">
+    <div class="distanceBox">
+        <h2>Add New Distance</h2>
+        <p>Enter numeric distance (e.g., 300)</p>
+        <input id="newDistanceInput"
+               placeholder="300"
+               oninput="this.value=this.value.replace(/[^0-9]/g,'');">
+        <br><br>
+        <button onclick="saveNewDistance()">Add</button>
+        <button class="danger" onclick="closeDistancePopup()">Cancel</button>
+    </div>
+</div>
+
+<!-- MANAGE DISTANCES POPUP -->
+<div id="manageDistancesPopup">
+    <div class="distanceBox">
+        <h2>Edit / Delete Distances</h2>
+        <p>You can change values (e.g., 300, 600) or delete rows.</p>
+        <div id="distancesList"></div>
+        <br>
+        <button onclick="saveManagedDistances()">Save</button>
+        <button class="danger" onclick="closeManageDistances()">Close</button>
+    </div>
+</div>
+
+<script>
 /* ==================================================
       THEME TOGGLE
 =================================================== */
-
 const toggleBtn = document.getElementById("themeToggle");
 let savedTheme = localStorage.getItem("theme") || "dark";
 
@@ -494,11 +616,9 @@ function applyTheme(mode) {
 /* ==================================================
       ERROR POPUP
 =================================================== */
-
 function showExcelErrorPopup() {
     document.getElementById("excelErrorPopup").style.display = "block";
 }
-
 function closeExcelErrorPopup() {
     document.getElementById("excelErrorPopup").style.display = "none";
 }
@@ -506,7 +626,6 @@ function closeExcelErrorPopup() {
 /* ==================================================
       CONFIRM POPUP
 =================================================== */
-
 let confirmCallback = null;
 
 function showConfirm(message, callback) {
@@ -523,7 +642,6 @@ function closeConfirm(result) {
 /* ==================================================
       EXCEL HELPERS
 =================================================== */
-
 const validGroups = [
     "ALPHA","BRAVO","CHARLIE","DELTA","ECHO",
     "FOXTROT","GOLF","HOTEL","INDIA"
@@ -538,9 +656,48 @@ function isName(x){
 }
 
 /* ==================================================
-      EXCEL UPLOAD WITH HEADING EXTRACTION
+      DATA STRUCTURE
 =================================================== */
+let groups = {};
+["Alpha","Bravo","Charlie","Delta","Echo",
+ "Foxtrot","Golf","Hotel","India"]
+.forEach(g=>groups[g]={skaters:[],history:{}});
 
+if(localStorage.getItem("groupsData")){
+    try {
+        groups = JSON.parse(localStorage.getItem("groupsData"));
+    } catch(e) {
+        console.error("Bad local groupsData, resetting", e);
+        ["Alpha","Bravo","Charlie","Delta","Echo",
+         "Foxtrot","Golf","Hotel","India"]
+         .forEach(g=>groups[g]={skaters:[],history:{}});        
+    }
+}
+
+let currentGroup = "Alpha";
+
+/* ---- Dynamic distances ---- */
+const defaultDistances = ["400","500","800","1000","1200","1500"];
+let distances = JSON.parse(localStorage.getItem("distances") || "null") || [...defaultDistances];
+
+function saveDistances(){
+    localStorage.setItem("distances", JSON.stringify(distances));
+}
+
+/* Points remain same */
+const points = {
+    1:1000,2:816,3:666,4:543,5:443,
+    6:362,7:295,8:241,9:196,10:160,
+    11:130,12:106,13:86,14:70,15:57
+};
+
+function saveData(){
+    localStorage.setItem("groupsData",JSON.stringify(groups));
+}
+
+/* ==================================================
+      EXCEL UPLOAD (with heading)
+=================================================== */
 function uploadExcel(){
     let file=document.getElementById("excelFile").files[0];
     if(!file)return alert("Please select an Excel file.");
@@ -551,50 +708,26 @@ function uploadExcel(){
         let data=new Uint8Array(e.target.result);
         let workbook=XLSX.read(data,{type:'array'});
 
-        /* -------------------------------
-              EXTRACT HEADING HERE
-        ------------------------------- */
+        /* Heading from Club/Clubs/Divisions A1 if present */
         let sheetNames=["Club","Clubs","Divisions"];
         let headingText="";
 
         for (let s of sheetNames){
             let sheet=workbook.Sheets[s];
             if(!sheet) continue;
-
-            // 1️⃣ Check A1 first
             let a1 = sheet["A1"] ? String(sheet["A1"].v).trim() : "";
             if(a1.length > 10){
                 headingText=a1;
                 break;
             }
-
-            // 2️⃣ Fallback scan entire sheet
-            let range = XLSX.utils.decode_range(sheet["!ref"]);
-            for(let R = range.s.r; R <= range.e.r; R++){
-                for(let C = range.s.c; C <= range.e.c; C++){
-                    let addr = XLSX.utils.encode_cell({r:R,c:C});
-                    let cell = sheet[addr];
-                    if(cell && typeof cell.v === "string" && cell.v.trim().length > 10){
-                        headingText = cell.v.trim();
-                        break;
-                    }
-                }
-                if(headingText) break;
-            }
-            if(headingText) break;
         }
-
-        // Display heading
         if(headingText){
             let h=document.getElementById("excelHeading");
             h.textContent=headingText;
             h.style.display="block";
         }
 
-        /* -------------------------------
-           ORIGINAL SKATER EXTRACTION
-        ------------------------------- */
-
+        /* --- ORIGINAL name & group extraction from Divisions --- */
         let sheet=workbook.Sheets["Divisions"];
         if(!sheet)return showExcelErrorPopup();
 
@@ -627,7 +760,6 @@ function uploadExcel(){
                 "FIRST","LAST","FULL","NAME",
                 "SKATER","ATHLETE","COMPETITOR","PARTICIPANT"
             ];
-
             if(headerBlacklist.some(h=>combined.includes(h))) continue;
 
             let name=null;
@@ -650,36 +782,8 @@ function uploadExcel(){
 }
 
 /* ==================================================
-      DATA STRUCTURE
+      RESET (with distances reset on Reset All)
 =================================================== */
-
-let groups={};
-["Alpha","Bravo","Charlie","Delta","Echo",
- "Foxtrot","Golf","Hotel","India"]
-.forEach(g=>groups[g]={skaters:[],history:{}});
-
-if(localStorage.getItem("groupsData")){
-    groups=JSON.parse(localStorage.getItem("groupsData"));
-}
-
-let currentGroup="Alpha";
-
-const distances=["400","500","800","1000","1500"];
-
-const points={
-    1:1000,2:816,3:666,4:543,5:443,
-    6:362,7:295,8:241,9:196,10:160,
-    11:130,12:106,13:86,14:70,15:57
-};
-
-function saveData(){
-    localStorage.setItem("groupsData",JSON.stringify(groups));
-}
-
-/* ==================================================
-      RESET (USING CUSTOM POPUP)
-=================================================== */
-
 function resetGroup(){
     showConfirm("Reset this group?", function(yes){
         if(!yes)return;
@@ -690,13 +794,18 @@ function resetGroup(){
 }
 
 function resetAll(){
-    showConfirm("Reset all groups?", function(yes){
+    showConfirm("Reset all groups and distances?", function(yes){
         if(!yes)return;
         ["Alpha","Bravo","Charlie","Delta","Echo",
          "Foxtrot","Golf","Hotel","India"]
          .forEach(g=>groups[g]={skaters:[],history:{}});
 
         saveData();
+
+        // Reset distances back to default
+        distances=[...defaultDistances];
+        saveDistances();
+
         loadGroupTable();
     });
 }
@@ -704,7 +813,6 @@ function resetAll(){
 /* ==================================================
       ADD SKATER
 =================================================== */
-
 function addManual(){
     let name=document.getElementById("skaterName").value.trim();
     if(!name)return;
@@ -719,8 +827,12 @@ function addSkaterToGroup(name,group){
     let G=groups[group];
     if(!G.skaters.includes(name)){
         G.skaters.push(name);
+
+        // create history object; distHistory keys match current distances
+        let distHistoryObj = {};
+        distances.forEach(d=>distHistoryObj[d]=[]);
         G.history[name]={
-            distHistory:{ "400":[], "500":[], "800":[], "1000":[], "1500":[] },
+            distHistory: distHistoryObj,
             stack:[]
         };
     }
@@ -731,17 +843,29 @@ function addSkaterToGroup(name,group){
 /* ==================================================
       VIEW GROUP
 =================================================== */
-
 function switchGroup(){
     currentGroup=document.getElementById("viewGroupSelect").value;
     loadGroupTable();
 }
 
 /* ==================================================
-      TABLE BUILD
+      HEADER ROW (dynamic)
 =================================================== */
+function buildHeaderRow(){
+    let row = document.getElementById("headerRow");
+    row.innerHTML = "<th>Name</th>";
+    distances.forEach(d=>{
+        row.innerHTML += "<th>"+d+"</th>";
+    });
+    row.innerHTML += "<th>Total</th><th>Rank</th><th>Undo / Delete</th>";
+}
 
+/* ==================================================
+      TABLE BUILD (dynamic distances)
+=================================================== */
 function loadGroupTable() {
+    buildHeaderRow();
+
     let tbody = document.querySelector("#scoreTable tbody");
     tbody.innerHTML = "";
 
@@ -751,9 +875,10 @@ function loadGroupTable() {
         let row = document.createElement("tr");
         row.dataset.name = name;
 
-        row.innerHTML = `
-            <td class="name" onclick="openEditName('${name}')">${name}</td>
-            <td></td><td></td><td></td><td></td><td></td>
+        let html = `<td class="name" onclick="openEditName('${name}')">${name}</td>`;
+        distances.forEach(()=>{ html += "<td></td>"; });
+
+        html += `
             <td class="total">0</td>
             <td class="rank">-</td>
             <td>
@@ -762,7 +887,8 @@ function loadGroupTable() {
             </td>
         `;
 
-        // Attach dropdowns
+        row.innerHTML = html;
+
         distances.forEach((dist, i) => {
             let cell = row.children[i + 1];
             let dd = createDropdown(name, dist);
@@ -774,16 +900,17 @@ function loadGroupTable() {
 
     rebuildDropdowns();
 
-    /* ⭐ RESTORE POSITIONS FROM HISTORY ⭐ */
+    // Restore positions from history
     groupData.skaters.forEach(name => {
         let row = document.querySelector(`tr[data-name="${name}"]`);
         let history = groups[currentGroup].history[name];
+        if(!history) return;
 
         distances.forEach(dist => {
             let dd = row.querySelector(`select[data-dist="${dist}"]`);
+            if(!dd) return;
 
-            // last known position from dropdown history
-            let stack = history.stack;
+            let stack = history.stack || [];
             let lastEntry = [...stack].reverse().find(s => s.dist === dist);
 
             if (lastEntry && lastEntry.current !== "") {
@@ -799,11 +926,9 @@ function loadGroupTable() {
     updateScores();
 }
 
-
 /* ==================================================
       DROPDOWNS
 =================================================== */
-
 function createDropdown(name,dist){
     let dd=document.createElement("select");
     dd.className="position";
@@ -817,20 +942,22 @@ function createDropdown(name,dist){
     dd.onchange = () => {
         let prevVal = dd.getAttribute("data-last") || "";
         let newVal = dd.value;
-        // Save previous state for undo
+
+        if(!groups[currentGroup].history[name]){
+            groups[currentGroup].history[name] = {distHistory:{},stack:[]};
+        }
+
         groups[currentGroup].history[name].stack.push({
             dist: dist,
             prev: prevVal,
             current: newVal
         });
 
-    // Save back the "last known" value
-    dd.setAttribute("data-last", newVal);
+        dd.setAttribute("data-last", newVal);
 
-    updateScores();
-    saveData();
-};
-
+        updateScores();
+        saveData();
+    };
 
     return dd;
 }
@@ -849,7 +976,6 @@ function rebuildDropdowns(){
 /* ==================================================
       SCORE + SORT + MEDALS
 =================================================== */
-
 function updateScores(){
     let tbody=document.querySelector("#scoreTable tbody");
     let rows=[...tbody.querySelectorAll("tr")];
@@ -896,10 +1022,9 @@ function updateScores(){
 /* ==================================================
       UNDO
 =================================================== */
-
 function undo(name){
     let h=groups[currentGroup].history[name];
-    if(h.stack.length===0)return;
+    if(!h || h.stack.length===0)return;
 
     let last=h.stack.pop();
     let dist=last.dist;
@@ -918,12 +1043,13 @@ function undo(name){
 /* ==================================================
       DELETE SKATER
 =================================================== */
-
 function deleteSkater(name){
     groups[currentGroup].skaters =
       groups[currentGroup].skaters.filter(n=>n!==name);
 
-    delete groups[currentGroup].history[name];
+    if(groups[currentGroup].history[name]){
+        delete groups[currentGroup].history[name];
+    }
 
     saveData();
     loadGroupTable();
@@ -932,7 +1058,6 @@ function deleteSkater(name){
 /* ==================================================
       EDIT NAME
 =================================================== */
-
 let nameBeingEdited=null;
 
 function openEditName(name){
@@ -965,21 +1090,146 @@ function saveEditedName(){
 /* ==================================================
       HELP
 =================================================== */
-
 function openHelp(){
     document.getElementById("helpPopup").style.display="block";
 }
-
 function closeHelp(){
     document.getElementById("helpPopup").style.display="none";
 }
 
 /* ==================================================
+      ACTIONS + DISTANCE POPUPS
+=================================================== */
+function openActionsPopup(){
+    document.getElementById("actionsPopup").style.display="flex";
+}
+function closeActionsPopup(){
+    document.getElementById("actionsPopup").style.display="none";
+}
+
+function openDistancePopup(){
+    document.getElementById("distancePopup").style.display="flex";
+}
+function closeDistancePopup(){
+    document.getElementById("distancePopup").style.display="none";
+}
+
+function openDistanceFromActions(){
+    closeActionsPopup();
+    openDistancePopup();
+}
+
+function openManageFromActions(){
+    closeActionsPopup();
+    openManageDistances();
+}
+
+function saveNewDistance(){
+    let d = document.getElementById("newDistanceInput").value.trim();
+    if(!d){
+        alert("Enter a distance (numbers only)");
+        return;
+    }
+    if(distances.includes(d)){
+        alert("Distance already exists.");
+        return;
+    }
+
+    distances.push(d);   // append at the end
+    saveDistances();
+
+    // ensure distHistory keys exist
+    Object.keys(groups).forEach(gName=>{
+        let g = groups[gName];
+        Object.keys(g.history).forEach(skater=>{
+            if(g.history[skater].distHistory && !g.history[skater].distHistory[d]){
+                g.history[skater].distHistory[d]=[];
+            }
+        });
+    });
+
+    document.getElementById("newDistanceInput").value = "";
+    closeDistancePopup();
+
+    loadGroupTable();
+    alert("Distance "+d+" added!");
+}
+
+/* ==================================================
+      MANAGE DISTANCES (EDIT / DELETE)
+=================================================== */
+function openManageDistances(){
+    const popup = document.getElementById("manageDistancesPopup");
+    const list = document.getElementById("distancesList");
+    list.innerHTML = "";
+
+    distances.forEach((d, idx) => {
+        const row = document.createElement("div");
+        row.className = "distanceRow";
+        row.innerHTML = `
+            <input type="text"
+                   value="${d}"
+                   data-index="${idx}"
+                   oninput="this.value=this.value.replace(/[^0-9]/g,'');">
+            <button class="danger" onclick="deleteDistance(${idx})">Delete</button>
+        `;
+        list.appendChild(row);
+    });
+
+    popup.style.display = "flex";
+}
+
+function closeManageDistances(){
+    document.getElementById("manageDistancesPopup").style.display="none";
+}
+
+function deleteDistance(idx){
+    distances.splice(idx,1);
+    if(distances.length === 0){
+        // do not allow zero distances – revert to defaults
+        distances = [...defaultDistances];
+    }
+    saveDistances();
+    openManageDistances(); // re-render list
+}
+
+function saveManagedDistances(){
+    const inputs = document.querySelectorAll("#distancesList input");
+    let newDists = [];
+
+    inputs.forEach(inp => {
+        let v = inp.value.trim();
+        if(v) newDists.push(v);
+    });
+
+    if(newDists.length === 0){
+        alert("At least one distance is required. Restoring defaults.");
+        newDists = [...defaultDistances];
+    }
+
+    distances = newDists;
+    saveDistances();
+
+    // ensure distHistory contains these keys
+    Object.keys(groups).forEach(gName=>{
+        let g = groups[gName];
+        Object.keys(g.history).forEach(skater=>{
+            let h = g.history[skater];
+            if(!h.distHistory) h.distHistory = {};
+            distances.forEach(d=>{
+                if(!h.distHistory[d]) h.distHistory[d] = [];
+            });
+        });
+    });
+
+    closeManageDistances();
+    loadGroupTable();
+}
+
+/* ==================================================
       INITIAL LOAD
 =================================================== */
-
 loadGroupTable();
-
 </script>
 
 </body>
