@@ -3,12 +3,20 @@
 <head>
 <title>Ice Skating Short Track Ranking Dashboard</title>
 
+<!-- ✅ THIS IS THE MAIN FIX (required for mobile media queries to work) -->
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 
 <style>
 /* --------------------------------------------------
     GLOBAL + BACKGROUND
 --------------------------------------------------*/
+html, body{
+    max-width:100%;
+    overflow-x:hidden;
+}
+
 body {
     margin:0;
     padding:0;
@@ -71,12 +79,8 @@ body {
     font-size:14px;
 }
 
-.theme-switch.dark {
-    background:#222;
-}
-.theme-switch.dark .slider {
-    transform:translateX(24px);
-}
+.theme-switch.dark { background:#222; }
+.theme-switch.dark .slider { transform:translateX(24px); }
 
 .sun { display:none; }
 .moon { display:block; }
@@ -96,9 +100,7 @@ body {
     color:black !important;
 }
 
-.light-mode th {
-    background:rgba(0,80,160,0.8) !important;
-}
+.light-mode th { background:rgba(0,80,160,0.8) !important; }
 
 .dark-mode body { color:white !important; }
 
@@ -110,9 +112,7 @@ body {
     color:white !important;
 }
 
-.dark-mode th {
-    background:rgba(0,60,120,0.8) !important;
-}
+.dark-mode th { background:rgba(0,60,120,0.8) !important; }
 
 /* --------------------------------------------------
            HEADER BAR
@@ -188,11 +188,7 @@ button:hover { background:#5ab3ff; }
 .danger { background:#ff4d4d !important; }
 .danger:hover { background:#ff7979 !important; }
 
-/* Make Actions button above glass */
-#addDistanceBtn {
-    position:relative;
-    z-index:2000;
-}
+#addDistanceBtn { position:relative; z-index:2000; }
 
 /* --------------------------------------------------
    SCOREBOARD TABLE
@@ -248,13 +244,6 @@ td.name { text-align:left; padding-left:12px; }
     display:none;
 }
 
-#excelErrorPopup .excelMsg {
-    font-family: Arial, sans-serif;
-    font-style: italic;
-    font-size:16px;
-    margin-bottom:12px;
-}
-
 #excelErrorPopup button {
     background:#1e90ff;
     border:none;
@@ -265,7 +254,6 @@ td.name { text-align:left; padding-left:12px; }
 }
 #excelErrorPopup button:hover { background:#5ab3ff; }
 
-/* Glass Confirm Popup */
 .glassConfirm {
     display:none;
     position:fixed;
@@ -308,10 +296,6 @@ td.name { text-align:left; padding-left:12px; }
 .confirmCancel { background:#555; }
 .confirmYes { background:#1e90ff; }
 
-.confirmCancel:hover { background:#777; }
-.confirmYes:hover { background:#5ab3ff; }
-
-/* Edit & Help popups */
 #editNamePopup,
 #helpPopup {
     position:fixed;
@@ -327,7 +311,6 @@ td.name { text-align:left; padding-left:12px; }
     z-index:300;
 }
 
-/* ADD / MANAGE DISTANCE + ACTIONS POPUPS */
 #distancePopup,
 #manageDistancesPopup,
 #actionsPopup {
@@ -357,7 +340,6 @@ td.name { text-align:left; padding-left:12px; }
     font-size:16px;
 }
 
-/* Manage distances rows */
 .distanceRow {
     display:flex;
     align-items:center;
@@ -416,11 +398,106 @@ td.name { text-align:left; padding-left:12px; }
     flex-wrap:wrap;
     margin-top:12px;
 }
-.paypalLinks a{
-    text-decoration:none;
+.paypalLinks a{ text-decoration:none; }
+.paypalLinks button{ height:36px; }
+
+/* ==================================================
+   ✅ AESTHETIC MOBILE LAYOUT (STRONG OVERRIDES)
+=================================================== */
+@media (max-width: 900px){
+
+  /* iPhone Safari: fixed background looks messy */
+  .bg{ background-attachment: scroll; }
+
+  .headerBar{
+    width:94%;
+    margin:14px auto 10px;
+    padding:12px;
+    border-radius:16px;
+  }
+  h1{
+    font-size:20px;
+    line-height:1.25;
+    text-shadow:none;
+  }
+
+  /* FORCE stack the 3 panels */
+  .control-row{
+    width:94%;
+    display:flex;
+    flex-direction:column;
+    gap:12px;
+  }
+  .control-col{
+    width:100%;
+    min-width:0;
+    justify-content:flex-start;
+    flex-wrap:wrap;
+    gap:10px;
+    padding:12px;
+    border-radius:16px;
+  }
+
+  /* Make everything full width & nicer */
+  input, select, button{
+    width:100% !important;
+    height:42px;
+    font-size:15px;
+    border-radius:10px;
+  }
+
+  /* theme + gift should sit on one line */
+  .theme-toggle-wrapper{
+    width:100% !important;
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:10px;
+  }
+  .theme-switch{
+    width:56px !important;
+    height:28px;
+    border-radius:28px;
+  }
+  .giftBtn{
+    width:48px !important;
+    height:42px !important;
+    border-radius:12px;
+  }
+
+  .viewBar{
+    width:94%;
+    margin-top:12px;
+    padding:12px;
+    border-radius:16px;
+  }
+  /* override your inline width:220px */
+  #viewGroupSelect{
+    width:100% !important;
+  }
+
+  /* table scroll container */
+  table{
+    width:94%;
+    margin:14px auto;
+    display:block;
+    overflow-x:auto;
+    white-space:nowrap;
+    border-radius:16px;
+    -webkit-overflow-scrolling:touch;
+  }
+  th, td{
+    padding:10px 8px;
+    font-size:14px;
+  }
+  select.position{
+    min-width:56px;
+    height:38px;
+  }
 }
-.paypalLinks button{
-    height:36px;
+
+@media (max-width: 420px){
+  h1{ font-size:18px; }
 }
 </style>
 </head>
@@ -466,7 +543,6 @@ td.name { text-align:left; padding-left:12px; }
                 </div>
             </button>
 
-            <!-- 🎁 PayPal button -->
             <button class="giftBtn" onclick="openPaypalPopup()" title="Support via PayPal">🎁</button>
         </div>
     </div>
@@ -499,16 +575,11 @@ td.name { text-align:left; padding-left:12px; }
 <div id="excelErrorPopup">
     <div class="excelErrorBox">
         <h3>⚠️ Oops!</h3>
-
-        <p>
-            The Excel file looks a little <b>glitchy</b> or not in the expected format
-        </p>
-
+        <p>The Excel file looks a little <b>glitchy</b> or not in the expected format</p>
         <p style="margin-top:8px;">
             You can try uploading again<br>
             or enter the names manually — both work!
         </p>
-
         <button onclick="closeExcelErrorPopup()">Got it 😊</button>
     </div>
 </div>
@@ -526,15 +597,11 @@ td.name { text-align:left; padding-left:12px; }
 
     <p>📄 Start by uploading the official Excel file with clubs and divisions</p>
     <p>✏️ You can also type skater names, and select group manually if that’s easier</p>
-
     <p>🏅 Choose each skater’s race position in the race</p>
     <p>✨ The dashboard automatically calculates scores & updates rank instantly</p>
-
     <p>⚙️ Use the “Actions” button to add, edit or delete race distances (points stay the same)</p>
-
     <p>📌 You can switch between different groups anytime — each group keeps its own list</p>
     <p>📌 All entries are safely stored on YOUR DEVICE so you can return anytime</p>
-
     <p>↩️ Made a mistake? You can undo or edit any name or position</p>
     <p>🗑️ To start fresh with the group, reset the current group — or use “RESET ALL GROUPS” for a complete clean slate</p>
 
@@ -597,10 +664,9 @@ td.name { text-align:left; padding-left:12px; }
 <div id="paypalPopup">
   <div class="paypalBox">
     <h2 style="margin:0 0 8px 0;">Support this dashboard 💙</h2>
-    <p style="margin:0; opacity:0.95;">If this helps you, you can donate via PayPal</p>
+    <p style="margin:0; opacity:0.95;">If this page helped you, you can support by donating via PayPal</p>
 
     <div class="paypalLinks">
-      <!-- Replace MandeepKour with your PayPal.me username -->
       <a href="https://www.paypal.me/MandeepSardarni/2" target="_blank"><button>$2</button></a>
       <a href="https://www.paypal.me/MandeepSardarni/5" target="_blank"><button>$5</button></a>
       <a href="https://www.paypal.me/MandeepSardarni/10" target="_blank"><button>$10</button></a>
@@ -829,7 +895,6 @@ function resetAll(){
 
         saveData();
 
-        // Reset distances back to default
         distances=[...defaultDistances];
         saveDistances();
 
@@ -855,7 +920,6 @@ function addSkaterToGroup(name,group){
     if(!G.skaters.includes(name)){
         G.skaters.push(name);
 
-        // create history object; distHistory keys match current distances
         let distHistoryObj = {};
         distances.forEach(d=>distHistoryObj[d]=[]);
         G.history[name]={
@@ -927,7 +991,6 @@ function loadGroupTable() {
 
     rebuildDropdowns();
 
-    // Restore positions from history
     groupData.skaters.forEach(name => {
         let row = document.querySelector(`tr[data-name="${name}"]`);
         let history = groups[currentGroup].history[name];
@@ -965,7 +1028,7 @@ function createDropdown(name,dist){
     let count=groups[currentGroup].skaters.length;
 
     for(let i=1;i<=count;i++) dd.innerHTML+=`<option>${i}</option>`;
-    
+
     dd.onchange = () => {
         let prevVal = dd.getAttribute("data-last") || "";
         let newVal = dd.value;
@@ -1117,55 +1180,29 @@ function saveEditedName(){
 /* ==================================================
       HELP
 =================================================== */
-function openHelp(){
-    document.getElementById("helpPopup").style.display="block";
-}
-function closeHelp(){
-    document.getElementById("helpPopup").style.display="none";
-}
+function openHelp(){ document.getElementById("helpPopup").style.display="block"; }
+function closeHelp(){ document.getElementById("helpPopup").style.display="none"; }
 
 /* ==================================================
       ACTIONS + DISTANCE POPUPS
 =================================================== */
-function openActionsPopup(){
-    document.getElementById("actionsPopup").style.display="flex";
-}
-function closeActionsPopup(){
-    document.getElementById("actionsPopup").style.display="none";
-}
+function openActionsPopup(){ document.getElementById("actionsPopup").style.display="flex"; }
+function closeActionsPopup(){ document.getElementById("actionsPopup").style.display="none"; }
 
-function openDistancePopup(){
-    document.getElementById("distancePopup").style.display="flex";
-}
-function closeDistancePopup(){
-    document.getElementById("distancePopup").style.display="none";
-}
+function openDistancePopup(){ document.getElementById("distancePopup").style.display="flex"; }
+function closeDistancePopup(){ document.getElementById("distancePopup").style.display="none"; }
 
-function openDistanceFromActions(){
-    closeActionsPopup();
-    openDistancePopup();
-}
-
-function openManageFromActions(){
-    closeActionsPopup();
-    openManageDistances();
-}
+function openDistanceFromActions(){ closeActionsPopup(); openDistancePopup(); }
+function openManageFromActions(){ closeActionsPopup(); openManageDistances(); }
 
 function saveNewDistance(){
     let d = document.getElementById("newDistanceInput").value.trim();
-    if(!d){
-        alert("Enter a distance (numbers only)");
-        return;
-    }
-    if(distances.includes(d)){
-        alert("Distance already exists.");
-        return;
-    }
+    if(!d){ alert("Enter a distance (numbers only)"); return; }
+    if(distances.includes(d)){ alert("Distance already exists."); return; }
 
-    distances.push(d);   // append at the end
+    distances.push(d);
     saveDistances();
 
-    // ensure distHistory keys exist
     Object.keys(groups).forEach(gName=>{
         let g = groups[gName];
         Object.keys(g.history).forEach(skater=>{
@@ -1182,9 +1219,6 @@ function saveNewDistance(){
     alert("Distance "+d+" added!");
 }
 
-/* ==================================================
-      MANAGE DISTANCES (EDIT / DELETE)
-=================================================== */
 function openManageDistances(){
     const popup = document.getElementById("manageDistancesPopup");
     const list = document.getElementById("distancesList");
@@ -1212,9 +1246,7 @@ function closeManageDistances(){
 
 function deleteDistance(idx){
     distances.splice(idx,1);
-    if(distances.length === 0){
-        distances = [...defaultDistances];
-    }
+    if(distances.length === 0){ distances = [...defaultDistances]; }
     saveDistances();
     openManageDistances();
 }
@@ -1254,12 +1286,8 @@ function saveManagedDistances(){
 /* ==================================================
       🎁 PAYPAL POPUP
 =================================================== */
-function openPaypalPopup(){
-    document.getElementById("paypalPopup").style.display = "flex";
-}
-function closePaypalPopup(){
-    document.getElementById("paypalPopup").style.display = "none";
-}
+function openPaypalPopup(){ document.getElementById("paypalPopup").style.display = "flex"; }
+function closePaypalPopup(){ document.getElementById("paypalPopup").style.display = "none"; }
 
 /* ==================================================
       INITIAL LOAD
