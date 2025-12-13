@@ -2,6 +2,11 @@
 
 👉 [https://mandeepkoursardarni.github.io/Ice-Skating-short-track-Ranking-Dashboard/](https://mandeepkoursardarni.github.io/Ice-Skating-short-track-Ranking-Dashboard/)
 
+## download Demo Video
+
+👉 [https://mandeepkoursardarni.github.io/Ice-Skating-short-track-Ranking-Dashboard/](https://github.com/MandeepKourSardarni/Ice-Skating-short-track-Ranking-Dashboard/blob/main/Demo.mp4))
+
+
 ## 📱 Quick Access – Scan the QR Code
 
 Scan this QR code to open the Ice Skating Short Track Ranking Dashboard instantly:
