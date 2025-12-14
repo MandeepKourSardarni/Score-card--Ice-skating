@@ -3,7 +3,6 @@
 <head>
 <title>Ice Skating Short Track Ranking Dashboard</title>
 
-<!-- ✅ Mobile viewport -->
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
@@ -13,6 +12,7 @@
     GLOBAL + BACKGROUND
 --------------------------------------------------*/
 *{ box-sizing:border-box; }
+html, body { width:100%; max-width:100%; overflow-x:hidden; }
 
 body {
     margin:0;
@@ -59,6 +59,7 @@ body {
     cursor:pointer;
     transition:0.3s;
     border:none;
+    flex:0 0 auto;
 }
 
 .theme-switch .slider {
@@ -76,12 +77,8 @@ body {
     font-size:14px;
 }
 
-.theme-switch.dark {
-    background:#222;
-}
-.theme-switch.dark .slider {
-    transform:translateX(24px);
-}
+.theme-switch.dark { background:#222; }
+.theme-switch.dark .slider { transform:translateX(24px); }
 
 .sun { display:none; }
 .moon { display:block; }
@@ -101,9 +98,7 @@ body {
     color:black !important;
 }
 
-.light-mode th {
-    background:rgba(0,80,160,0.8) !important;
-}
+.light-mode th { background:rgba(0,80,160,0.8) !important; }
 
 .dark-mode body { color:white !important; }
 
@@ -115,17 +110,15 @@ body {
     color:white !important;
 }
 
-.dark-mode th {
-    background:rgba(0,60,120,0.8) !important;
-}
+.dark-mode th { background:rgba(0,60,120,0.8) !important; }
 
 /* --------------------------------------------------
            HEADER BAR
 --------------------------------------------------*/
 .headerBar {
-    width:90%;
-    margin:25px auto 20px auto;
-    padding:15px;
+    width:min(1200px, 92%);
+    margin:22px auto 16px auto;
+    padding:14px 16px;
     text-align:center;
     background:rgba(255,255,255,0.08);
     border-radius:12px;
@@ -135,36 +128,35 @@ body {
 
 h1 {
     margin:0;
-    font-size:34px;
+    font-size:32px;
     font-weight:700;
     text-shadow:0 0 12px rgba(0,160,255,0.7);
 }
 
 /* --------------------------------------------------
-          CONTROL PANEL
+          CONTROL PANEL (✅ GRID - FIXES TABLETS)
 --------------------------------------------------*/
 .control-row {
-    width:95%;
-    display:flex;
-    gap:18px;
+    width:min(1280px, 95%);
     margin:0 auto;
-    justify-content:space-between;
-    flex-wrap:wrap;
+    display:grid;
+    grid-template-columns: repeat(3, minmax(280px, 1fr));
+    gap:14px;
+    align-items:stretch;
 }
 
 .control-col {
-    flex:1;
-    min-width:260px;
-    padding:10px 14px;
+    padding:12px 14px;
     background:rgba(255,255,255,0.09);
     border-radius:12px;
     backdrop-filter:blur(14px);
+    box-shadow:0 0 16px rgba(0,0,0,0.4);
+
     display:flex;
     align-items:center;
     justify-content:center;
-    gap:12px;
-    flex-wrap:wrap;              /* ✅ allows wrapping on small screens */
-    box-shadow:0 0 16px rgba(0,0,0,0.4);
+    gap:10px;
+    flex-wrap:wrap;
 }
 
 /* --------------------------------------------------
@@ -187,6 +179,7 @@ button {
     background:#1e90ff;
     color:white;
     cursor:pointer;
+    white-space:nowrap;
 }
 
 button:hover { background:#5ab3ff; }
@@ -195,28 +188,45 @@ button:hover { background:#5ab3ff; }
 .danger:hover { background:#ff7979 !important; }
 
 /* Make Actions button above glass */
-#addDistanceBtn {
-    position:relative;
-    z-index:2000;
+#addDistanceBtn { position:relative; z-index:2000; }
+
+/* ✅ Smarter sizing inside control panels */
+#excelFile{
+    flex: 1 1 220px;
+    max-width: 520px;
+}
+#skaterName{
+    flex: 1 1 220px;
+    min-width: 180px;
+}
+#addGroupSelect{
+    flex: 0 0 auto;
 }
 
 /* --------------------------------------------------
-   SCOREBOARD TABLE
+   VIEW BAR
 --------------------------------------------------*/
 .viewBar {
-    width:90%;
-    margin:25px auto 0 auto;
-    padding:15px;
+    width:min(1200px, 92%);
+    margin:16px auto 0 auto;
+    padding:14px;
     background:rgba(255,255,255,0.09);
     border-radius:12px;
     text-align:center;
     backdrop-filter:blur(14px);
 }
 
-/* ✅ table wrapper for mobile scrolling */
+#viewGroupSelect{
+    width:min(420px, 100%);
+    margin-top:8px;
+}
+
+/* --------------------------------------------------
+   SCOREBOARD TABLE
+--------------------------------------------------*/
 .tableWrap{
-    width:95%;
-    margin:25px auto;
+    width:min(1280px, 95%);
+    margin:16px auto 26px auto;
     overflow-x:auto;
     -webkit-overflow-scrolling:touch;
     border-radius:14px;
@@ -229,18 +239,20 @@ table {
     backdrop-filter:blur(12px);
     border-radius:14px;
     overflow:hidden;
-    min-width: 820px; /* ✅ keeps columns readable; scroll on mobile */
+
+    /* ✅ keeps columns readable; scroll on smaller screens */
+    min-width: 920px;
 }
 
 th, td {
     text-align:center;
-    padding:12px;
-    white-space:nowrap; /* ✅ avoids ugly wrapping inside cells */
+    padding:12px 10px;
+    white-space:nowrap;
 }
 
 th {
     background:rgba(0,60,120,0.7);
-    font-size:17px;
+    font-size:16px;
 }
 
 td.name { text-align:left; padding-left:12px; }
@@ -262,13 +274,6 @@ td.name { text-align:left; padding-left:12px; }
     text-align:center;
     z-index:99999;
     display:none;
-}
-
-#excelErrorPopup .excelMsg {
-    font-family: Arial, sans-serif;
-    font-style: italic;
-    font-size:16px;
-    margin-bottom:12px;
 }
 
 #excelErrorPopup button {
@@ -308,12 +313,12 @@ td.name { text-align:left; padding-left:12px; }
     margin-top:18px;
     display:flex;
     justify-content:space-between;
+    gap:10px;
 }
 
 .confirmCancel,
 .confirmYes {
     flex:1;
-    margin:0 6px;
     padding:10px;
     border:none;
     border-radius:6px;
@@ -324,9 +329,6 @@ td.name { text-align:left; padding-left:12px; }
 .confirmCancel { background:#555; }
 .confirmYes { background:#1e90ff; }
 
-.confirmCancel:hover { background:#777; }
-.confirmYes:hover { background:#5ab3ff; }
-
 /* Edit & Help popups */
 #editNamePopup,
 #helpPopup {
@@ -335,14 +337,14 @@ td.name { text-align:left; padding-left:12px; }
     transform:translate(-50%,-50%);
     background:#010114;
     padding:20px;
-    width:90%; max-width:400px;
+    width:90%; max-width:420px;
     border-radius:12px;
     color:white;
     text-align:center;
     display:none;
     z-index:300;
-    max-height: 80vh;          /* ✅ mobile */
-    overflow:auto;             /* ✅ mobile */
+    max-height: 80vh;
+    overflow:auto;
 }
 
 /* ADD / MANAGE DISTANCE + ACTIONS POPUPS */
@@ -362,7 +364,7 @@ td.name { text-align:left; padding-left:12px; }
 
 .distanceBox {
     width:90%;
-    max-width:380px;
+    max-width:420px;
     padding:20px;
     background:rgba(255,255,255,0.1);
     border-radius:14px;
@@ -385,7 +387,7 @@ td.name { text-align:left; padding-left:12px; }
 }
 
 .distanceRow input {
-    width:80px;
+    width:90px;
     text-align:center;
 }
 
@@ -405,6 +407,7 @@ td.name { text-align:left; padding-left:12px; }
     justify-content:center;
     font-size:18px;
     line-height:1;
+    flex:0 0 auto;
 }
 .giftBtn:hover{ background:rgba(255,255,255,0.25); }
 
@@ -420,7 +423,7 @@ td.name { text-align:left; padding-left:12px; }
 }
 .paypalBox{
     width:90%;
-    max-width:380px;
+    max-width:420px;
     padding:20px;
     background:rgba(255,255,255,0.12);
     border-radius:14px;
@@ -434,55 +437,39 @@ td.name { text-align:left; padding-left:12px; }
     flex-wrap:wrap;
     margin-top:12px;
 }
-.paypalLinks a{
-    text-decoration:none;
-}
-.paypalLinks button{
-    height:36px;
-}
+.paypalLinks a{ text-decoration:none; }
 
 /* ==================================================
-   ✅ MOBILE FRIENDLY (phones)
+   ✅ RESPONSIVE BREAKPOINTS (phones + tablets)
 =================================================== */
-@media (max-width: 700px){
-    .bg{ background-attachment:scroll; } /* ✅ better performance on mobile */
 
-    .headerBar{ width:94%; margin:16px auto 12px; padding:12px; }
-    h1{ font-size:20px; line-height:1.2; }
-
-    .control-row{ width:94%; gap:12px; }
-    .control-col{
-        min-width: 100%;
-        justify-content:flex-start;
-        padding:10px;
-        gap:10px;
+/* ✅ Tablets / small laptops: 2 columns */
+@media (max-width: 1100px){
+    .control-row{
+        grid-template-columns: repeat(2, minmax(280px, 1fr));
     }
-
-    /* Make inputs/buttons easier to tap and fit */
-    input, select, button{
-        height:44px;
-        font-size:15px;
-    }
-
-    /* File + upload row looks nicer stacked */
-    #excelFile{ width:100%; }
-    .control-col button{ flex:1; }
-
-    /* Manual add controls stack neatly */
-    #skaterName{ flex: 1 1 100%; width:100%; }
-    #addGroupSelect{ flex: 1 1 100%; width:100%; }
-
-    /* The big action cluster wraps */
-    .theme-toggle-wrapper{ width:100%; justify-content:flex-start; }
-
-    .viewBar{ width:94%; margin:14px auto 0; padding:12px; }
-    #viewGroupSelect{ width:100% !important; max-width: 420px; }
-    .tableWrap{ width:94%; margin:14px auto; }
+    h1{ font-size:26px; }
 }
 
-@media (max-width: 380px){
-    h1{ font-size:18px; }
-    .control-col{ padding:9px; }
+/* ✅ Tablets portrait / large phones: 1 column */
+@media (max-width: 820px){
+    .bg{ background-attachment:scroll; } /* smoother */
+    .control-row{ grid-template-columns: 1fr; }
+    .headerBar{ margin:16px auto 12px; padding:12px; }
+    h1{ font-size:22px; line-height:1.2; }
+
+    .control-col{ justify-content:flex-start; }
+    #excelFile{ flex: 1 1 100%; max-width:none; width:100%; }
+}
+
+/* ✅ Phones: bigger tap targets + full width controls */
+@media (max-width: 520px){
+    input, select, button{ height:44px; font-size:15px; }
+    .viewBar{ padding:12px; }
+    #skaterName{ flex: 1 1 100%; width:100%; }
+    #addGroupSelect{ flex: 1 1 100%; width:100%; }
+    .theme-toggle-wrapper{ width:100%; justify-content:flex-start; }
+    table{ min-width: 980px; } /* keep readable; scroll on phone */
 }
 </style>
 </head>
@@ -528,7 +515,6 @@ td.name { text-align:left; padding-left:12px; }
                 </div>
             </button>
 
-            <!-- 🎁 PayPal button -->
             <button class="giftBtn" onclick="openPaypalPopup()" title="Support via PayPal">🎁</button>
         </div>
     </div>
@@ -537,19 +523,17 @@ td.name { text-align:left; padding-left:12px; }
 
 <!-- VIEW BAR -->
 <div class="viewBar">
-    <div id="excelHeading"
-         style="display:none; font-size:18px; margin-bottom:12px; white-space:normal;">
-    </div>
+    <div id="excelHeading" style="display:none; font-size:18px; margin-bottom:12px; white-space:normal;"></div>
 
     <label>Select Group</label><br>
-    <select id="viewGroupSelect" onchange="switchGroup()" style="width:220px;margin-top:8px;">
+    <select id="viewGroupSelect" onchange="switchGroup()">
         <option>Alpha</option><option>Bravo</option><option>Charlie</option>
         <option>Delta</option><option>Echo</option><option>Foxtrot</option>
         <option>Golf</option><option>Hotel</option><option>India</option>
     </select>
 </div>
 
-<!-- ✅ SCOREBOARD TABLE (wrapped for mobile scroll) -->
+<!-- SCOREBOARD TABLE -->
 <div class="tableWrap">
   <table id="scoreTable">
       <thead>
@@ -563,16 +547,8 @@ td.name { text-align:left; padding-left:12px; }
 <div id="excelErrorPopup">
     <div class="excelErrorBox">
         <h3>⚠️ Oops!</h3>
-
-        <p>
-            The Excel file looks a little <b>glitchy</b> or not in the expected format
-        </p>
-
-        <p style="margin-top:8px;">
-            You can try uploading again<br>
-            or enter the names manually — both work!
-        </p>
-
+        <p>The Excel file looks a little <b>glitchy</b> or not in the expected format</p>
+        <p style="margin-top:8px;">You can try uploading again<br>or enter the names manually — both work!</p>
         <button onclick="closeExcelErrorPopup()">Got it 😊</button>
     </div>
 </div>
@@ -636,9 +612,7 @@ td.name { text-align:left; padding-left:12px; }
     <div class="distanceBox">
         <h2>Add New Distance</h2>
         <p>Enter numeric distance (e.g., 300)</p>
-        <input id="newDistanceInput"
-               placeholder="300"
-               oninput="this.value=this.value.replace(/[^0-9]/g,'');">
+        <input id="newDistanceInput" placeholder="300" oninput="this.value=this.value.replace(/[^0-9]/g,'');">
         <br><br>
         <button onclick="saveNewDistance()">Add</button>
         <button class="danger" onclick="closeDistancePopup()">Cancel</button>
@@ -1225,10 +1199,9 @@ function saveNewDistance(){
         return;
     }
 
-    distances.push(d);   // append at the end
+    distances.push(d);
     saveDistances();
 
-    // ensure distHistory keys exist
     Object.keys(groups).forEach(gName=>{
         let g = groups[gName];
         Object.keys(g.history).forEach(skater=>{
@@ -1245,9 +1218,6 @@ function saveNewDistance(){
     alert("Distance "+d+" added!");
 }
 
-/* ==================================================
-      MANAGE DISTANCES (EDIT / DELETE)
-=================================================== */
 function openManageDistances(){
     const popup = document.getElementById("manageDistancesPopup");
     const list = document.getElementById("distancesList");
