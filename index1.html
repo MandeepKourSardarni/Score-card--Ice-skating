@@ -3,12 +3,18 @@
 <head>
 <title>Ice Skating Short Track Ranking Dashboard</title>
 
+<!-- ✅ Mobile viewport -->
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 
 <style>
 /* --------------------------------------------------
     GLOBAL + BACKGROUND
 --------------------------------------------------*/
+*{ box-sizing:border-box; }
+html, body { width:100%; max-width:100%; overflow-x:hidden; }
+
 body {
     margin:0;
     padding:0;
@@ -136,7 +142,7 @@ h1 {
 }
 
 /* --------------------------------------------------
-          CONTROL PANEL
+          CONTROL PANEL  (✅ KEEP ORIGINAL FOR LAPTOP)
 --------------------------------------------------*/
 .control-row {
     width:95%;
@@ -159,6 +165,7 @@ h1 {
     justify-content:center;
     gap:12px;
     box-shadow:0 0 16px rgba(0,0,0,0.4);
+    flex-wrap:wrap;
 }
 
 /* --------------------------------------------------
@@ -181,6 +188,7 @@ button {
     background:#1e90ff;
     color:white;
     cursor:pointer;
+    white-space:nowrap;
 }
 
 button:hover { background:#5ab3ff; }
@@ -207,19 +215,29 @@ button:hover { background:#5ab3ff; }
     backdrop-filter:blur(14px);
 }
 
-table {
+/* ✅ table wrapper (new) */
+.tableWrap{
     width:95%;
     margin:25px auto;
+    overflow-x:auto;
+    -webkit-overflow-scrolling:touch;
+    border-radius:14px;
+}
+
+table {
+    width:100%;
     border-collapse:collapse;
     background:rgba(255,255,255,0.07);
     backdrop-filter:blur(12px);
     border-radius:14px;
     overflow:hidden;
+    min-width: 920px; /* readable; scroll on tablets/phones */
 }
 
 th, td {
     text-align:center;
     padding:12px;
+    white-space:nowrap;
 }
 
 th {
@@ -325,6 +343,8 @@ td.name { text-align:left; padding-left:12px; }
     text-align:center;
     display:none;
     z-index:300;
+    max-height:80vh;
+    overflow:auto;
 }
 
 /* ADD / MANAGE DISTANCE + ACTIONS POPUPS */
@@ -422,6 +442,54 @@ td.name { text-align:left; padding-left:12px; }
 .paypalLinks button{
     height:36px;
 }
+
+/* ==================================================
+   ✅ RESPONSIVE (ONLY for tablets/phones)
+   Laptop stays exactly the same because default is above
+=================================================== */
+
+/* Tablets (iPad/Samsung) */
+@media (max-width: 1024px){
+    .bg{ background-attachment:scroll; }
+
+    .control-row{
+        display:grid;
+        grid-template-columns: repeat(2, minmax(280px, 1fr));
+        gap:14px;
+        width:95%;
+    }
+    .control-col{
+        min-width:unset;
+        justify-content:flex-start;
+    }
+
+    h1{ font-size:26px; }
+}
+
+/* Phones */
+@media (max-width: 640px){
+    .control-row{
+        grid-template-columns: 1fr;
+    }
+
+    input, select, button{
+        height:44px;
+        font-size:15px;
+    }
+
+    #excelFile{ width:100%; }
+    #skaterName{ width:100%; flex:1 1 100%; }
+    #addGroupSelect{ width:100%; flex:1 1 100%; }
+
+    .theme-toggle-wrapper{
+        width:100%;
+        justify-content:flex-start;
+    }
+
+    .headerBar{ width:94%; margin:16px auto 12px; }
+    h1{ font-size:20px; }
+    .viewBar{ width:94%; }
+}
 </style>
 </head>
 
@@ -487,13 +555,15 @@ td.name { text-align:left; padding-left:12px; }
     </select>
 </div>
 
-<!-- SCOREBOARD TABLE -->
-<table id="scoreTable">
-    <thead>
-        <tr id="headerRow"></tr>
-    </thead>
-    <tbody></tbody>
-</table>
+<!-- ✅ SCOREBOARD TABLE (wrapped for mobile scroll) -->
+<div class="tableWrap">
+  <table id="scoreTable">
+      <thead>
+          <tr id="headerRow"></tr>
+      </thead>
+      <tbody></tbody>
+  </table>
+</div>
 
 <!-- CUTE GLASS ERROR POPUP -->
 <div id="excelErrorPopup">
@@ -597,7 +667,7 @@ td.name { text-align:left; padding-left:12px; }
 <div id="paypalPopup">
   <div class="paypalBox">
     <h2 style="margin:0 0 8px 0;">Support this dashboard 💙</h2>
-    <p style="margin:0; opacity:0.95;">If this page helped you, you can support by donatating via PayPal</p>
+    <p style="margin:0; opacity:0.95;">If this helps you, you can donate via PayPal</p>
 
     <div class="paypalLinks">
       <!-- Replace MandeepKour with your PayPal.me username -->
