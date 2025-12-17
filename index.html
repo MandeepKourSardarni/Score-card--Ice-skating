@@ -21,8 +21,8 @@
       --text: rgba(255,255,255,.92);
       --muted: rgba(255,255,255,.62);
 
-      --primary:#3f62bd;
-      --danger:#973838;
+      --primary:#2f6bff;
+      --danger:#ff4d4d;
 
       --shadow: 0 18px 55px rgba(0,0,0,.35);
       --radius: 18px;
@@ -31,20 +31,13 @@
       --gap: clamp(12px, 1.6vw, 18px);
 
       --maxw: 1050px;
-
-      --accent: #2BB7FF;                 /* aqua accent */
-      --accent2: #6AD3FF;                /* lighter aqua */
-      --accentSoft: rgba(43,183,255,.18);
-      --ring: rgba(43,183,255,.35);
-
-      
     }
 
     *{ box-sizing:border-box; }
     html,body{ height:100%; }
     body{
       margin:0;
-      font-family: Calibri, Helvetica, sans-serif;
+      font-family: Calibri, Helvetica, Arial, sans-serif;
       color:var(--text);
       background:
         radial-gradient(1200px 700px at 30% 10%, rgba(47,107,255,.25), transparent 60%),
@@ -102,14 +95,8 @@
       line-height: 1.15;
       text-shadow: 0 10px 35px rgba(0,0,0,.35);
     }
-    .sub{
-      margin-top:6px;
-      color: var(--muted);
-      font-size: 13px;
-      line-height: 1.35;
-    }
 
-    /* ✅ Combined top bar: Setup + Actions + Select Group */
+    /* Combined top panel (Setup + Actions + Select Group) */
     .topBar{
       width:100%;
       background: var(--glass);
@@ -118,11 +105,10 @@
       box-shadow: var(--shadow);
       backdrop-filter: blur(16px);
       padding: 12px;
-
       display:flex;
       align-items:center;
       justify-content:center;
-      gap: clamp(10px, 2vw, 22px); /* ✅ grows on laptop */
+      gap: clamp(10px, 2vw, 18px);
       flex-wrap:wrap;
     }
 
@@ -142,12 +128,46 @@
       justify-content:center;
       gap:8px;
 
-      font-weight:600;
+      font-weight:700;
       font-size:14px;
       white-space:nowrap;
       cursor:pointer;
+      user-select:none;
     }
     .tabBtn:hover{ transform: translateY(-1px); background: rgba(255,255,255,.12); }
+
+    /* Select group inline */
+    .labelSmall{
+      font-weight: 900;
+      letter-spacing:.15px;
+      opacity:.9;
+      white-space:nowrap;
+    }
+
+    select, .input{
+      height: 44px;
+      border-radius: 14px;
+      border: 1px solid rgba(255,255,255,.16);
+      background: rgba(255,255,255,.10);
+      color: var(--text);
+      padding: 0 12px;
+      outline:none;
+      backdrop-filter: blur(10px);
+      min-width: 240px;
+    }
+    .input::placeholder{ color: rgba(255,255,255,.55); }
+
+    /* ✅ dropdown list colors (dark / light) */
+    select{ color: var(--text); }
+    select option{
+      background: rgba(10,12,20,0.98);
+      color: rgba(255,255,255,0.92);
+    }
+    body.light select{ color: rgba(10,12,16,.92); }
+    body.light select option{
+      background: rgba(255,255,255,0.98);
+      color: rgba(10,12,16,.92);
+    }
 
     /* Cards */
     .card{
@@ -168,6 +188,7 @@
       text-transform: uppercase;
       color: rgba(255,255,255,.88);
       white-space:nowrap;
+      text-align:center;
     }
 
     .row{
@@ -176,50 +197,6 @@
       flex-wrap:wrap;
       align-items:center;
       justify-content:center;
-    }
-
-    select, .input{
-      height: 44px;
-      border-radius: 14px;
-      border: 1px solid rgba(255,255,255,.16);
-      background: rgba(255,255,255,.10);
-      color: var(--text);
-      padding: 0 12px;
-      outline:none;
-      backdrop-filter: blur(10px);
-      min-width: 240px;
-    }
-    .input::placeholder{ color: rgba(255,255,255,.55); }
-
-    /* ✅ Theme-safe dropdown list */
-    select{ color: var(--text); }
-    select option{
-      background: rgba(10,12,20,0.98);
-      color: rgba(255,255,255,0.92);
-    }
-    body.light select{ color: rgba(10,12,16,.92); }
-    body.light select option{
-      background: rgba(255,255,255,0.98);
-      color: rgba(10,12,16,.92);
-    }
-
-    /* ✅ Select group inline in topBar */
-    .groupInline{
-      display:flex;
-      align-items:center;
-      gap:10px;
-      flex-wrap:nowrap;
-    }
-    .groupInline .label{
-      font-weight:900;
-      letter-spacing:.25px;
-      text-transform:uppercase;
-      font-size:13px;
-      color: rgba(255,255,255,.82);
-      white-space:nowrap;
-    }
-    .groupInline select{
-      min-width: 220px;
     }
 
     /* Rankings table */
@@ -271,18 +248,25 @@
       color: var(--text);
       cursor:pointer;
       font-weight: 850;
+      letter-spacing:.1px;
+      user-select:none;
       margin: 0 4px;
-      white-space:nowrap;
     }
+    .miniBtn:hover{ background: rgba(255,255,255,.16); transform: translateY(-1px); }
+    .miniBtn.danger{
+      border-color: rgba(255,77,77,.55);
+      background: rgba(255,77,77,.18);
+    }
+    .miniBtn.danger:hover{ background: rgba(255,77,77,.26); }
 
-    /* ✅ Position dropdown smaller */
+    /* ✅ smaller race-position dropdowns */
     select.position{
       height: 34px !important;
+      border-radius: 12px !important;
       min-width: 64px !important;
       width: 64px !important;
       padding: 0 8px !important;
-      border-radius: 12px !important;
-      text-align-last:center;
+      font-weight: 800;
     }
 
     /* Modals */
@@ -297,6 +281,7 @@
       z-index: 500;
       padding: 14px;
     }
+
     .modal{
       width: min(820px, 100%);
       max-height: 88vh;
@@ -307,12 +292,14 @@
       box-shadow: 0 25px 90px rgba(0,0,0,.55);
       backdrop-filter: blur(16px);
     }
+
     .modalInner{
       background: var(--glass);
       border: 1px solid rgba(255,255,255,.10);
       border-radius: 22px;
       padding: 16px;
     }
+
     .modalHead{
       display:flex;
       align-items:center;
@@ -326,6 +313,7 @@
       font-size: 18px;
       text-transform: uppercase;
     }
+
     .iconBtn{
       height: 40px;
       width: 40px;
@@ -340,6 +328,7 @@
       font-size: 18px;
       user-select:none;
     }
+    .iconBtn:hover{ background: rgba(255,255,255,.14); }
 
     .btn{
       height: 44px;
@@ -350,13 +339,16 @@
       color: var(--text);
       cursor:pointer;
       font-weight: 900;
+      letter-spacing:.2px;
       display:inline-flex;
       align-items:center;
       justify-content:center;
       gap:10px;
       user-select:none;
+      transition: transform .15s ease, background .15s ease;
       white-space:nowrap;
     }
+    .btn:hover{ transform: translateY(-1px); background: rgba(255,255,255,.16); }
     .btnPrimary{
       border-color: rgba(47,107,255,.55);
       background: linear-gradient(180deg, rgba(47,107,255,.90), rgba(47,107,255,.55));
@@ -381,9 +373,13 @@
       background: rgba(255,255,255,.10);
       color: var(--text);
       font-weight: 900;
+      letter-spacing:.2px;
+      backdrop-filter: blur(10px);
       white-space:nowrap;
     }
+    .pbBtn:hover{ background: rgba(255,255,255,.16); transform: translateY(-1px); }
 
+    /* Actions list */
     .actionList{ display:flex; flex-direction:column; gap:10px; margin-top:10px; }
     .actionItem{
       display:flex;
@@ -396,9 +392,10 @@
       background: rgba(255,255,255,.08);
     }
     .actionItem .left{ display:flex; flex-direction:column; gap:4px; min-width:0; }
-    .actionItem .name{ font-weight: 950; }
+    .actionItem .name{ font-weight: 950; letter-spacing:.15px; }
     .actionItem .desc{ color: var(--muted); font-size: 12.5px; line-height: 1.25; }
 
+    /* Small boxes inside modals */
     .smallBox{
       background: rgba(0,0,0,.28);
       border: 1px solid rgba(255,255,255,.14);
@@ -479,14 +476,9 @@
     /* Mobile */
     @media (max-width: 640px){
       .bg{ background-attachment:scroll; }
-
-      .topBar{ justify-content:center; }
-      .groupInline{ width:100%; }
-      .groupInline select{ width:100%; min-width:0; }
-
-      .row > *{ flex: 1 1 100%; min-width: 0; }
+      .topBar{ justify-content:flex-start; }
+      .topBar > *{ flex: 1 1 auto; }
       select, .input{ width:100%; min-width:0; }
-      .modalInner{ padding: 14px; }
     }
 
     /* Light mode */
@@ -506,56 +498,6 @@
     body.light .bg{ opacity:.12; }
     body.light .bgOverlay{ background: rgba(255,255,255,.25); }
     body.light th{ background: rgba(255,255,255,.75); color: rgba(10,12,16,.72); }
-
-    /* ==================================================
-   💧 AQUA ACCENT (clean + modern)
-=================================================== */
-
-/* Thin aqua glow on glass panes */
-.card, .panelNav, .header, .modalInner, .confirmBoxInner{
-  position:relative;
-}
-.card::before, .panelNav::before, .header::before, .modalInner::before, .confirmBoxInner::before{
-  content:"";
-  position:absolute;
-  inset:0;
-  border-radius:inherit;
-  pointer-events:none;
-  background: linear-gradient(90deg,
-    transparent 0%,
-    rgba(43,183,255,.10) 25%,
-    rgba(43,183,255,.22) 50%,
-    rgba(43,183,255,.10) 75%,
-    transparent 100%
-  );
-  opacity:.85;
-  mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
-  -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
-  padding: 1px;
-}
-
-/* Aqua focus ring */
-select:focus, .input:focus, button:focus{
-  outline:none;
-  box-shadow:
-    0 0 0 3px var(--ring),
-    0 14px 40px rgba(0,0,0,.25);
-}
-
-/* Optional: active tab look */
-.isActive{
-  border-color: rgba(43,183,255,.55) !important;
-  background: linear-gradient(180deg, rgba(43,183,255,.22), rgba(255,255,255,.08)) !important;
-  box-shadow: 0 14px 36px rgba(43,183,255,.16);
-}
-
-/* Subtle aqua lift for main title */
-.header h1{
-  text-shadow:
-    0 12px 40px rgba(0,0,0,.35),
-    0 0 18px rgba(43,183,255,.18);
-}
-    
   </style>
 </head>
 
@@ -569,24 +511,22 @@ select:focus, .input:focus, button:focus{
       <h1>Ice Skating Short Track Ranking Dashboard</h1>
     </div>
 
-    <!-- ✅ ONE PANEL: Setup + Actions + Select Group -->
+    <!-- ✅ ONE glass panel: Setup + Actions + Select Group -->
     <div class="topBar">
       <button class="tabBtn" id="setupBtn">🧾 Setup</button>
       <button class="tabBtn" id="actionsBtn">⚙️ Actions</button>
 
-      <div class="groupInline">
-        <div class="label">Select Group</div>
-        <select id="viewGroupSelect">
-          <option>Alpha</option><option>Bravo</option><option>Charlie</option>
-          <option>Delta</option><option>Echo</option><option>Foxtrot</option>
-          <option>Golf</option><option>Hotel</option><option>India</option>
-        </select>
-      </div>
+      <div class="labelSmall">SELECT GROUP</div>
+      <select id="viewGroupSelect">
+        <option>Alpha</option><option>Bravo</option><option>Charlie</option>
+        <option>Delta</option><option>Echo</option><option>Foxtrot</option>
+        <option>Golf</option><option>Hotel</option><option>India</option>
+      </select>
     </div>
 
     <!-- Rankings -->
     <div class="card">
-      <div class="cardTitle" style="text-align:center;">Rankings</div>
+      <div class="cardTitle">Rankings</div>
 
       <div id="excelHeading" style="display:none; text-align:center; margin-top:8px; color:var(--muted); font-size:13px; line-height:1.35;"></div>
 
@@ -632,6 +572,7 @@ select:focus, .input:focus, button:focus{
           <button class="iconBtn" onclick="closeModal('setupModal')">✕</button>
         </div>
 
+        <!-- Panel 1: Excel Upload -->
         <div class="smallBox">
           <div style="font-weight:900; margin-bottom:10px;">Excel Upload</div>
           <div class="row" style="justify-content:flex-start;">
@@ -640,6 +581,7 @@ select:focus, .input:focus, button:focus{
           </div>
         </div>
 
+        <!-- Panel 2: Manual Entry -->
         <div class="smallBox" style="margin-top:12px;">
           <div style="font-weight:900; margin-bottom:10px;">Manual Entry</div>
           <div class="row" style="justify-content:flex-start;">
@@ -653,6 +595,7 @@ select:focus, .input:focus, button:focus{
           </div>
         </div>
 
+        <!-- Bottom buttons -->
         <div class="row" style="margin-top:12px; justify-content:center;">
           <button class="tabBtn" type="button" id="themeToggleBtn">🌓 Theme</button>
 
@@ -664,6 +607,7 @@ select:focus, .input:focus, button:focus{
             🔗 PB Tracker
           </a>
         </div>
+
       </div>
     </div>
   </div>
@@ -681,7 +625,7 @@ select:focus, .input:focus, button:focus{
           <div class="actionItem">
             <div class="left">
               <div class="name">➕ Add Distance</div>
-              <div class="desc">Add a new distance column</div>
+              <div class="desc">Add a new distance column (duplicates allowed)</div>
             </div>
             <button class="btn btnPrimary" type="button" onclick="openModal('addDistanceModal')">Open</button>
           </div>
@@ -689,7 +633,7 @@ select:focus, .input:focus, button:focus{
           <div class="actionItem">
             <div class="left">
               <div class="name">✏️ Edit / Delete Distance</div>
-              <div class="desc">Rename or remove distance columns</div>
+              <div class="desc">Edit distance labels or delete columns</div>
             </div>
             <button class="btn" type="button" onclick="openManageDistances()">Open</button>
           </div>
@@ -742,10 +686,10 @@ select:focus, .input:focus, button:focus{
 
         <div class="smallBox">
           <div style="color:rgba(255,255,255,.90); line-height:1.5;">
-            Enter numeric distance (example: 300)
+            Enter numeric distance (example: 400)
           </div>
           <div class="row" style="margin-top:10px;">
-            <input id="newDistanceInput" class="input" placeholder="300" oninput="this.value=this.value.replace(/[^0-9]/g,'');" />
+            <input id="newDistanceInput" class="input" placeholder="400" oninput="this.value=this.value.replace(/[^0-9]/g,'');" />
             <button class="btn btnPrimary" onclick="saveNewDistance()">Add</button>
           </div>
         </div>
@@ -764,7 +708,7 @@ select:focus, .input:focus, button:focus{
 
         <div class="smallBox">
           <div style="color:rgba(255,255,255,.90); line-height:1.5;">
-            You can change the numbers or delete rows.
+            You can change the numbers or delete rows. Duplicate values are allowed.
           </div>
           <div id="distancesList"></div>
 
@@ -789,24 +733,28 @@ select:focus, .input:focus, button:focus{
         <div class="smallBox" style="line-height:1.65;">
           <div>📄 Start by uploading the official Excel file with clubs and divisions</div>
           <div>✏️ You can also add skaters manually (and choose the group)</div>
-           <div style="margin-top:10px;">🏅 Choose each skater’s race position</div>
-           <div>✨ Scores are updated based on ranks automatically</div>
 
-           <div style="margin-top:10px;">⚙️ Use <b>Actions</b> to add / edit / delete distances</div>
-           <div style="margin-top:10px;">📌 You can switch groups anytime — each group keeps its own list</div>
-           <div>📌 All entries are stored on <b>your device only</b>, nothing is uploaded anywhere, it is safe ☺️</div>
-           <div style="margin-top:10px;">↩️ Use <b>Undo</b> to revert the last change for that skater</div>
+          <div style="margin-top:10px;">🏅 Choose each skater’s race position</div>
+          <div>✨ Scores and ranks update automatically</div>
 
-           <div style="margin-top:10px;">🗑️ <b>Reset Present Group</b> clears only the selected group</div>
-           <div>🧹 <b>Reset All Groups</b> clears everything and restores default distances</div>
-           <div style="margin-top:10px;">
+          <div style="margin-top:10px;">⚙️ Use <b>Actions</b> to add / edit / delete distances</div>
+
+          <div style="margin-top:10px;">📌 You can switch groups anytime — each group keeps its own list</div>
+          <div>📌 All entries are stored on <b>your device only</b>, nothing is uploaded anywhere</div>
+
+          <div style="margin-top:10px;">↩️ Use <b>Undo</b> to revert the last change for that skater</div>
+
+          <div style="margin-top:10px;">🗑️ <b>Reset Present Group</b> clears only the selected group</div>
+          <div>🧹 <b>Reset All Groups</b> clears everything and restores default distances</div>
+
+          <div style="margin-top:10px;">
             🔗 <b>PB Tracker</b> is a separate dashboard for long-term PBs across seasons and years
           </div>
+
           <div style="margin-top:12px; text-align:center; color:rgba(255,255,255,.90); font-weight:900;">
             💙 All the Best 💙
           </div>
         </div>
-
       </div>
     </div>
   </div>
@@ -858,7 +806,7 @@ select:focus, .input:focus, button:focus{
 
 <script>
 /* ==================================================
-   STORAGE + THEME
+   TOAST + THEME
 =================================================== */
 function toast(msg, ms=2600){
   const t=document.getElementById('toast');
@@ -886,14 +834,12 @@ document.getElementById('themeToggleBtn').addEventListener('click', () => {
 function openModal(id){ document.getElementById(id).style.display='flex'; }
 function closeModal(id){ document.getElementById(id).style.display='none'; }
 
-// click outside closes
 ["setupModal","actionsModal","addDistanceModal","manageDistancesModal","helpModal","donateModal","editNameModal"]
 .forEach(id=>{
   const el=document.getElementById(id);
   el.addEventListener('click', (e)=>{ if(e.target.id===id) closeModal(id); });
 });
 
-// nav buttons
 document.getElementById('setupBtn').addEventListener('click', ()=>openModal('setupModal'));
 document.getElementById('actionsBtn').addEventListener('click', ()=>openModal('actionsModal'));
 
@@ -927,6 +873,7 @@ const points = {
   11:130,12:106,13:86,14:70,15:57
 };
 
+/* ✅ defaults changed to your new set */
 const defaultDistances = ["400","500","800","1000"];
 let distances = JSON.parse(localStorage.getItem("distances") || "null") || [...defaultDistances];
 
@@ -961,7 +908,9 @@ function saveData(){
   localStorage.setItem("groupsData", JSON.stringify(groups));
   localStorage.setItem("currentGroup", currentGroup);
 }
-function saveDistances(){ localStorage.setItem("distances", JSON.stringify(distances)); }
+function saveDistances(){
+  localStorage.setItem("distances", JSON.stringify(distances));
+}
 
 function isName(x){
   if(!x || typeof x!=="string") return false;
@@ -983,12 +932,30 @@ viewSel.addEventListener("change", ()=>{
 });
 
 /* ==================================================
+   DISTANCE DUPLICATES SUPPORT
+=================================================== */
+function escRe(s){
+  return String(s).replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+}
+function baseRe(base){
+  return new RegExp("^" + escRe(base) + "(\\s\\(\\d+\\))?$");
+}
+function makeUniqueDistanceLabel(base){
+  base = String(base).trim();
+  const re = baseRe(base);
+  const count = distances.filter(d => re.test(d)).length;
+  return count === 0 ? base : `${base} (${count + 1})`;
+}
+
+/* ==================================================
    TABLE BUILD
 =================================================== */
 function buildHeaderRow(){
   const row = document.getElementById("headerRow");
   row.innerHTML = "<th style='text-align:left;'>Name</th>";
-  distances.forEach(d=> row.innerHTML += `<th>${d}</th>`);
+  distances.forEach(d=>{
+    row.innerHTML += `<th>${escapeHtml(d)}</th>`;
+  });
   row.innerHTML += "<th>Total</th><th>Rank</th><th>Undo / Delete</th>";
 }
 
@@ -1008,6 +975,10 @@ function createDropdown(name, dist){
     if(!groups[currentGroup].history[name]){
       groups[currentGroup].history[name] = { stack: [] };
     }
+    if(!groups[currentGroup].history[name].stack){
+      groups[currentGroup].history[name].stack = [];
+    }
+
     groups[currentGroup].history[name].stack.push({ dist, prev: prevVal, current: newVal });
 
     dd.setAttribute("data-last", newVal);
@@ -1033,6 +1004,7 @@ function loadGroupTable(){
   tbody.innerHTML = "";
 
   const groupData = groups[currentGroup];
+
   groupData.skaters.forEach(n=>{
     if(!groupData.history[n]) groupData.history[n] = { stack: [] };
     if(!groupData.history[n].stack) groupData.history[n].stack = [];
@@ -1057,7 +1029,8 @@ function loadGroupTable(){
 
     distances.forEach((dist, i)=>{
       const cell = tr.children[i+1];
-      cell.appendChild(createDropdown(name, dist));
+      const dd = createDropdown(name, dist);
+      cell.appendChild(dd);
     });
 
     tbody.appendChild(tr);
@@ -1065,7 +1038,7 @@ function loadGroupTable(){
 
   rebuildDropdowns();
 
-  // restore last values
+  // restore last values per distance
   groupData.skaters.forEach(name=>{
     const row = document.querySelector(`tr[data-name="${cssEscape(name)}"]`);
     const h = groupData.history[name];
@@ -1246,21 +1219,35 @@ function resetAll(){
 }
 
 /* ==================================================
-   DISTANCES (ADD / EDIT / DELETE)
+   DISTANCES (ADD / EDIT / DELETE)  ✅ duplicates allowed
 =================================================== */
 function saveNewDistance(){
-  const d = (document.getElementById("newDistanceInput").value || "").trim();
-  if(!d){ toast("Enter a distance (numbers only)."); return; }
-  if(distances.includes(d)){ toast("Distance already exists."); return; }
+  const base = (document.getElementById("newDistanceInput").value || "").trim();
+  if(!base){ toast("Enter a distance (numbers only)."); return; }
 
-  distances.push(d);
-  saveDistances();
+  const re = baseRe(base);
+  const exists = distances.some(d => re.test(d));
 
-  document.getElementById("newDistanceInput").value = "";
-  closeModal("addDistanceModal");
+  const doAdd = () => {
+    const label = makeUniqueDistanceLabel(base);
+    distances.push(label);
+    saveDistances();
 
-  loadGroupTable();
-  toast(`Distance ${d} added.`);
+    document.getElementById("newDistanceInput").value = "";
+    closeModal("addDistanceModal");
+
+    loadGroupTable();
+    toast(`Distance ${label} added.`);
+  };
+
+  if(exists){
+    showConfirm(`"${base}" already exists. Add another ${base}?`, (yes)=>{
+      if(!yes) return;
+      doAdd();
+    });
+  }else{
+    doAdd();
+  }
 }
 
 function openManageDistances(){
@@ -1274,7 +1261,7 @@ function openManageDistances(){
       <div style="display:flex; gap:10px; align-items:center;">
         <div style="font-weight:900; opacity:.9;">#${idx+1}</div>
         <input type="text" value="${escapeHtml(d)}" data-index="${idx}"
-               oninput="this.value=this.value.replace(/[^0-9]/g,'');" />
+               oninput="this.value=this.value.replace(/[^0-9 ()]/g,'');" />
       </div>
       <button class="btn btnDanger" style="height:40px;" onclick="deleteDistance(${idx})">Delete</button>
     `;
@@ -1293,20 +1280,27 @@ function deleteDistance(idx){
 
 function saveManagedDistances(){
   const inputs = document.querySelectorAll("#distancesList input");
-  let newD = [];
+  let raw = [];
   inputs.forEach(inp=>{
     const v = inp.value.trim();
-    if(v) newD.push(v);
+    if(v) raw.push(v);
   });
 
-  newD = newD.filter((v, i)=> newD.indexOf(v) === i);
-
-  if(newD.length === 0){
+  if(raw.length === 0){
     toast("At least one distance required. Restoring defaults.");
-    newD = [...defaultDistances];
+    raw = [...defaultDistances];
   }
 
-  distances = newD;
+  // Normalize duplicates into (2), (3)...
+  const used = {};
+  const normalized = raw.map(v=>{
+    // keep only number if user typed "400 (2)" etc -> take base number
+    const base = String(v).trim().match(/^(\d+)/)?.[1] || String(v).trim();
+    used[base] = (used[base] || 0) + 1;
+    return used[base] === 1 ? base : `${base} (${used[base]})`;
+  });
+
+  distances = normalized;
   saveDistances();
 
   closeModal("manageDistancesModal");
@@ -1315,7 +1309,7 @@ function saveManagedDistances(){
 }
 
 /* ==================================================
-   EXCEL UPLOAD
+   EXCEL UPLOAD (same core logic)
 =================================================== */
 function uploadExcel(){
   const file = document.getElementById("excelFile").files[0];
