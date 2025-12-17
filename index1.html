@@ -1,1382 +1,1432 @@
+
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-<title>Ice Skating Short Track Ranking Dashboard</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <title>Ice Skating Short Track Ranking Dashboard</title>
 
-<!-- ✅ Mobile viewport -->
-<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <!-- SheetJS for Excel import -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 
-<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+  <style>
+    :root{
+      --bg1:#07162f;
+      --bg2:#041022;
 
-<style>
-/* --------------------------------------------------
-    GLOBAL + BACKGROUND
---------------------------------------------------*/
-*{ box-sizing:border-box; }
-html, body { width:100%; max-width:100%; overflow-x:hidden; }
+      /* ✅ glass panes: 20% less opaque */
+      --glass: rgba(255,255,255,.072);
+      --glass2: rgba(255,255,255,.10);
+      --stroke: rgba(255,255,255,.18);
 
-body {
-    margin:0;
-    padding:0;
-    font-family:'Segoe UI',Arial,sans-serif;
-    background:transparent !important;
-    color:white;
-}
+      --text: rgba(255,255,255,.92);
+      --muted: rgba(255,255,255,.62);
 
-.bg {
-    background-image:url("https://raw.githubusercontent.com/MandeepKourSardarni/Ice-Skating-short-track-Ranking-Dashboard/main/image.jpg?raw=1");
-    background-size:cover;
-    background-position:center;
-    background-attachment:fixed;
-    position:fixed;
-    inset:0;
-    z-index:-3;
-}
+      --primary:#3f62bd;
+      --danger:#973838;
 
-.bgOverlay {
-    position:fixed;
-    inset:0;
-    background:rgba(0,0,0,0.35);
-    z-index:-2;
-}
+      --shadow: 0 18px 55px rgba(0,0,0,.35);
+      --radius: 18px;
 
-/* --------------------------------------------------
-      SLIDING THEME TOGGLE
---------------------------------------------------*/
-.theme-toggle-wrapper {
-    display:flex;
-    align-items:center;
-    justify-content:center;
-}
+      --pad: clamp(14px, 2vw, 22px);
+      --gap: clamp(12px, 1.6vw, 18px);
 
-.theme-switch {
-    --h: 24px;
-    --w: 48px;
-    width:var(--w);
-    height:var(--h);
-    border-radius:var(--h);
-    background:#ddd;
-    position:relative;
-    cursor:pointer;
-    transition:0.3s;
-    border:none;
-}
+      --maxw: 1050px;
 
-.theme-switch .slider {
-    width:calc(var(--h) - 6px);
-    height:calc(var(--h) - 6px);
-    background:white;
-    border-radius:50%;
-    position:absolute;
-    top:3px;
-    left:3px;
-    transition:0.3s ease;
-    display:flex;
-    align-items:center;
-    justify-content:center;
-    font-size:14px;
-}
+      --accent: #2BB7FF;                 /* aqua accent */
+      --accent2: #6AD3FF;                /* lighter aqua */
+      --accentSoft: rgba(43,183,255,.18);
+      --ring: rgba(43,183,255,.35);
 
-.theme-switch.dark {
-    background:#222;
-}
-.theme-switch.dark .slider {
-    transform:translateX(24px);
-}
-
-.sun { display:none; }
-.moon { display:block; }
-.dark .sun { display:block; }
-.dark .moon { display:none; }
-
-/* --------------------------------------------------
-    THEME OVERRIDES
---------------------------------------------------*/
-.light-mode body { color:black !important; }
-
-.light-mode .headerBar,
-.light-mode .control-col,
-.light-mode .viewBar,
-.light-mode table {
-    background:rgba(255, 255, 255, 0.315) !important;
-    color:black !important;
-}
-
-.light-mode th {
-    background:rgba(0,80,160,0.8) !important;
-}
-
-.dark-mode body { color:white !important; }
-
-.dark-mode .headerBar,
-.dark-mode .control-col,
-.dark-mode .viewBar,
-.dark-mode table {
-    background:rgba(40,40,40,0.55) !important;
-    color:white !important;
-}
-
-.dark-mode th {
-    background:rgba(0,60,120,0.8) !important;
-}
-
-/* --------------------------------------------------
-           HEADER BAR
---------------------------------------------------*/
-.headerBar {
-    width:90%;
-    margin:25px auto 20px auto;
-    padding:15px;
-    text-align:center;
-    background:rgba(255,255,255,0.08);
-    border-radius:12px;
-    backdrop-filter:blur(14px);
-    box-shadow:0 0 16px rgba(0,0,0,0.4);
-    position:relative; /* ✅ for PB button */
-}
-
-h1 {
-    margin:0;
-    font-size:34px;
-    font-weight:700;
-    text-shadow:0 0 12px rgba(0,160,255,0.7);
-}
-
-/* ✅ PB Tracker button (top-right) */
-.pbLinkBtn{
-  position:absolute;
-  top:14px;
-  right:14px;
-  height:34px;
-  padding:0 12px;
-  border-radius:10px;
-  display:inline-flex;
-  align-items:center;
-  justify-content:center;
-  text-decoration:none;
-  font-size:14px;
-  font-weight:600;
-  color:white;
-  background:rgba(255,255,255,0.16);
-  border:1px solid rgba(255,255,255,0.22);
-  backdrop-filter:blur(10px);
-  box-shadow:0 0 14px rgba(0,0,0,0.25);
-  cursor:pointer;
-}
-.pbLinkBtn:hover{ background:rgba(255,255,255,0.26); }
-
-/* --------------------------------------------------
-          CONTROL PANEL  (✅ KEEP ORIGINAL FOR LAPTOP)
---------------------------------------------------*/
-.control-row {
-    width:95%;
-    display:flex;
-    gap:18px;
-    margin:0 auto;
-    justify-content:space-between;
-    flex-wrap:wrap;
-}
-
-.control-col {
-    flex:1;
-    min-width:260px;
-    padding:10px 14px;
-    background:rgba(255,255,255,0.09);
-    border-radius:12px;
-    backdrop-filter:blur(14px);
-    display:flex;
-    align-items:center;
-    justify-content:center;
-    gap:12px;
-    box-shadow:0 0 16px rgba(0,0,0,0.4);
-    flex-wrap:wrap;
-}
-
-/* --------------------------------------------------
-      INPUTS + BUTTONS
---------------------------------------------------*/
-input, select, button {
-    height:36px;
-    padding:4px 10px;
-    border-radius:6px;
-    border:none;
-    font-size:14px;
-}
-
-input, select {
-    background:rgba(255,255,255,0.85);
-    color:black;
-}
-
-button {
-    background:#1e90ff;
-    color:white;
-    cursor:pointer;
-    white-space:nowrap;
-}
-
-button:hover { background:#5ab3ff; }
-
-.danger { background:#ff4d4d !important; }
-.danger:hover { background:#ff7979 !important; }
-
-/* Make Actions button above glass */
-#addDistanceBtn {
-    position:relative;
-    z-index:2000;
-}
-
-/* --------------------------------------------------
-   SCOREBOARD TABLE
---------------------------------------------------*/
-.viewBar {
-    width:90%;
-    margin:25px auto 0 auto;
-    padding:15px;
-    background:rgba(255,255,255,0.09);
-    border-radius:12px;
-    text-align:center;
-    backdrop-filter:blur(14px);
-}
-
-/* ✅ table wrapper (new) */
-.tableWrap{
-    width:95%;
-    margin:25px auto;
-    overflow-x:auto;
-    -webkit-overflow-scrolling:touch;
-    border-radius:14px;
-}
-
-table {
-    width:100%;
-    border-collapse:collapse;
-    background:rgba(255,255,255,0.07);
-    backdrop-filter:blur(12px);
-    border-radius:14px;
-    overflow:hidden;
-    min-width: 920px; /* readable; scroll on tablets/phones */
-}
-
-th, td {
-    text-align:center;
-    padding:12px;
-    white-space:nowrap;
-}
-
-th {
-    background:rgba(0,60,120,0.7);
-    font-size:17px;
-}
-
-td.name { text-align:left; padding-left:12px; }
-
-/* --------------------------------------------------
-        POPUPS
---------------------------------------------------*/
-#excelErrorPopup {
-    position:fixed;
-    left:50%;
-    top:140px;
-    transform:translateX(-50%);
-    width:90%;
-    max-width:420px;
-    background:rgba(0,0,0,0.85);
-    padding:20px;
-    border-radius:12px;
-    color:white;
-    text-align:center;
-    z-index:99999;
-    display:none;
-}
-
-#excelErrorPopup .excelMsg {
-    font-family: Arial, sans-serif;
-    font-style: italic;
-    font-size:16px;
-    margin-bottom:12px;
-}
-
-#excelErrorPopup button {
-    background:#1e90ff;
-    border:none;
-    padding:10px 20px;
-    border-radius:6px;
-    color:white;
-    cursor:pointer;
-}
-#excelErrorPopup button:hover { background:#5ab3ff; }
-
-/* Glass Confirm Popup */
-.glassConfirm {
-    display:none;
-    position:fixed;
-    inset:0;
-    background:rgba(0,0,0,0.45);
-    backdrop-filter:blur(6px);
-    z-index:500;
-    align-items:center;
-    justify-content:center;
-}
-
-.confirmBox {
-    width:90%;
-    max-width:360px;
-    padding:20px;
-    background:rgba(255,255,255,0.10);
-    border-radius:14px;
-    backdrop-filter:blur(18px);
-    color:white;
-    text-align:center;
-}
-
-.confirmButtons {
-    margin-top:18px;
-    display:flex;
-    justify-content:space-between;
-}
-
-.confirmCancel,
-.confirmYes {
-    flex:1;
-    margin:0 6px;
-    padding:10px;
-    border:none;
-    border-radius:6px;
-    cursor:pointer;
-    font-size:15px;
-}
-
-.confirmCancel { background:#555; }
-.confirmYes { background:#1e90ff; }
-
-.confirmCancel:hover { background:#777; }
-.confirmYes:hover { background:#5ab3ff; }
-
-/* Edit & Help popups */
-#editNamePopup,
-#helpPopup {
-    position:fixed;
-    top:50%; left:50%;
-    transform:translate(-50%,-50%);
-    background:#010114;
-    padding:20px;
-    width:90%; max-width:400px;
-    border-radius:12px;
-    color:white;
-    text-align:center;
-    display:none;
-    z-index:300;
-    max-height:80vh;
-    overflow:auto;
-}
-
-/* ADD / MANAGE DISTANCE + ACTIONS POPUPS */
-#distancePopup,
-#manageDistancesPopup,
-#actionsPopup {
-    display:none;
-    position:fixed;
-    inset:0;
-    background:rgba(0,0,0,0.55);
-    backdrop-filter:blur(6px);
-    color:white;
-    z-index:5000;
-    align-items:center;
-    justify-content:center;
-}
-
-.distanceBox {
-    width:90%;
-    max-width:380px;
-    padding:20px;
-    background:rgba(255,255,255,0.1);
-    border-radius:14px;
-    text-align:center;
-}
-
-.distanceBox input {
-    width:80%;
-    margin-top:10px;
-    font-size:16px;
-}
-
-/* Manage distances rows */
-.distanceRow {
-    display:flex;
-    align-items:center;
-    justify-content:center;
-    gap:8px;
-    margin:6px 0;
-}
-
-.distanceRow input {
-    width:80px;
-    text-align:center;
-}
-
-/* ==================================================
-   🎁 GIFT (PAYPAL) BUTTON + POPUP
-=================================================== */
-.giftBtn{
-    background:rgba(255,255,255,0.15);
-    border:1px solid rgba(255,255,255,0.22);
-    backdrop-filter:blur(10px);
-    height:36px;
-    width:36px;
-    border-radius:10px;
-    cursor:pointer;
-    display:flex;
-    align-items:center;
-    justify-content:center;
-    font-size:18px;
-    line-height:1;
-}
-.giftBtn:hover{ background:rgba(255,255,255,0.25); }
-
-#paypalPopup{
-    display:none;
-    position:fixed;
-    inset:0;
-    background:rgba(0,0,0,0.55);
-    backdrop-filter:blur(6px);
-    z-index:6000;
-    align-items:center;
-    justify-content:center;
-}
-.paypalBox{
-    width:90%;
-    max-width:380px;
-    padding:20px;
-    background:rgba(255,255,255,0.12);
-    border-radius:14px;
-    text-align:center;
-    color:white;
-}
-.paypalLinks{
-    display:flex;
-    gap:10px;
-    justify-content:center;
-    flex-wrap:wrap;
-    margin-top:12px;
-}
-.paypalLinks a{
-    text-decoration:none;
-}
-.paypalLinks button{
-    height:36px;
-}
-
-/* ==================================================
-   ✅ RESPONSIVE (ONLY for tablets/phones)
-   Laptop stays exactly the same because default is above
-=================================================== */
-
-/* Tablets (iPad/Samsung) */
-@media (max-width: 1024px){
-    .bg{ background-attachment:scroll; }
-
-    .control-row{
-        display:grid;
-        grid-template-columns: repeat(2, minmax(280px, 1fr));
-        gap:14px;
-        width:95%;
-    }
-    .control-col{
-        min-width:unset;
-        justify-content:flex-start;
+      
     }
 
-    h1{ font-size:26px; }
-}
-
-/* Phones */
-@media (max-width: 640px){
-    .control-row{
-        grid-template-columns: 1fr;
+    *{ box-sizing:border-box; }
+    html,body{ height:100%; }
+    body{
+      margin:0;
+      font-family: Calibri, Helvetica, sans-serif;
+      color:var(--text);
+      background:
+        radial-gradient(1200px 700px at 30% 10%, rgba(47,107,255,.25), transparent 60%),
+        radial-gradient(900px 600px at 80% 20%, rgba(43,183,255,.18), transparent 55%),
+        linear-gradient(180deg, var(--bg1), var(--bg2));
+      overflow-x:hidden;
     }
 
-    input, select, button{
-        height:44px;
-        font-size:15px;
+    /* Background image same as main code */
+    .bg{
+      position:fixed;
+      inset:0;
+      z-index:-2;
+      background-image:url("https://raw.githubusercontent.com/MandeepKourSardarni/Ice-Skating-short-track-Ranking-Dashboard/main/image.jpg?raw=1");
+      background-size:cover;
+      background-position:center;
+      background-attachment:fixed;
+      opacity:.22;
+      filter:saturate(1.05) contrast(1.05);
+    }
+    .bgOverlay{
+      position:fixed;
+      inset:0;
+      z-index:-1;
+      background: rgba(0,0,0,.38);
+      backdrop-filter: blur(2px);
     }
 
-    #excelFile{ width:100%; }
-    #skaterName{ width:100%; flex:1 1 100%; }
-    #addGroupSelect{ width:100%; flex:1 1 100%; }
-
-    .theme-toggle-wrapper{
-        width:100%;
-        justify-content:flex-start;
+    .wrap{
+      width:min(var(--maxw), 100%);
+      margin:0 auto;
+      padding: calc(var(--pad) + env(safe-area-inset-top)) var(--pad) calc(22px + env(safe-area-inset-bottom));
+      display:flex;
+      flex-direction:column;
+      gap: var(--gap);
+      align-items: center;
     }
 
-    .headerBar{ width:94%; margin:16px auto 12px; }
-    h1{ font-size:20px; }
+    /* Header centered */
+    .header{
+      width:100%;
+      background: rgba(0,0,0,.20);
+      border: 1px solid rgba(255,255,255,.12);
+      border-radius: var(--radius);
+      box-shadow: 0 10px 35px rgba(0,0,0,.25);
+      backdrop-filter: blur(14px);
+      padding: 16px 16px;
+      text-align:center;
+    }
+    .header h1{
+      margin:0;
+      font-weight: 900;
+      letter-spacing: .3px;
+      font-size: clamp(22px, 2.8vw, 34px);
+      line-height: 1.15;
+      text-shadow: 0 10px 35px rgba(0,0,0,.35);
+    }
+    .sub{
+      margin-top:6px;
+      color: var(--muted);
+      font-size: 13px;
+      line-height: 1.35;
+    }
 
-    /* ✅ keep PB button nice on phone */
-    .pbLinkBtn{
-      top:10px;
-      right:10px;
-      height:32px;
-      padding:0 10px;
+    /* ✅ Combined top bar: Setup + Actions + Select Group */
+    .topBar{
+      width:100%;
+      background: var(--glass);
+      border: 1px solid var(--stroke);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      backdrop-filter: blur(16px);
+      padding: 12px;
+
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      gap: clamp(10px, 2vw, 22px); /* ✅ grows on laptop */
+      flex-wrap:wrap;
+    }
+
+    .tabBtn{
+      width:auto;
+      flex: 0 0 auto;
+      padding: 10px 16px;
+      height: 42px;
+
+      border-radius: 999px;
+      border: 1px solid rgba(255,255,255,.18);
+      background: rgba(255,255,255,.10);
+      color: var(--text);
+
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      gap:8px;
+
+      font-weight:600;
+      font-size:14px;
+      white-space:nowrap;
+      cursor:pointer;
+    }
+    .tabBtn:hover{ transform: translateY(-1px); background: rgba(255,255,255,.12); }
+
+    /* Cards */
+    .card{
+      width:100%;
+      background: var(--glass);
+      border: 1px solid var(--stroke);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      backdrop-filter: blur(16px);
+      padding: clamp(14px, 1.7vw, 18px);
+    }
+
+    .cardTitle{
+      margin:0;
+      font-weight: 950;
+      letter-spacing: .25px;
+      font-size: 16px;
+      text-transform: uppercase;
+      color: rgba(255,255,255,.88);
+      white-space:nowrap;
+    }
+
+    .row{
+      display:flex;
+      gap:12px;
+      flex-wrap:wrap;
+      align-items:center;
+      justify-content:center;
+    }
+
+    select, .input{
+      height: 44px;
+      border-radius: 14px;
+      border: 1px solid rgba(255,255,255,.16);
+      background: rgba(255,255,255,.10);
+      color: var(--text);
+      padding: 0 12px;
+      outline:none;
+      backdrop-filter: blur(10px);
+      min-width: 240px;
+    }
+    .input::placeholder{ color: rgba(255,255,255,.55); }
+
+    /* ✅ Theme-safe dropdown list */
+    select{ color: var(--text); }
+    select option{
+      background: rgba(10,12,20,0.98);
+      color: rgba(255,255,255,0.92);
+    }
+    body.light select{ color: rgba(10,12,16,.92); }
+    body.light select option{
+      background: rgba(255,255,255,0.98);
+      color: rgba(10,12,16,.92);
+    }
+
+    /* ✅ Select group inline in topBar */
+    .groupInline{
+      display:flex;
+      align-items:center;
+      gap:10px;
+      flex-wrap:nowrap;
+    }
+    .groupInline .label{
+      font-weight:900;
+      letter-spacing:.25px;
+      text-transform:uppercase;
       font-size:13px;
+      color: rgba(255,255,255,.82);
+      white-space:nowrap;
+    }
+    .groupInline select{
+      min-width: 220px;
     }
 
-    .viewBar{ width:94%; }
+    /* Rankings table */
+    .tableWrap{
+      width:100%;
+      margin-top: 12px;
+      overflow:auto;
+      -webkit-overflow-scrolling:touch;
+      border-radius: 16px;
+      border: 1px solid rgba(255,255,255,.12);
+      background: rgba(255,255,255,.04);
+    }
+    table{
+      width:100%;
+      border-collapse: collapse;
+      min-width: 920px;
+    }
+    th, td{
+      padding: 12px 12px;
+      white-space:nowrap;
+      text-align:center;
+      border-bottom: 1px solid rgba(255,255,255,.08);
+      font-size: 13.5px;
+    }
+    th{
+      position: sticky;
+      top: 0;
+      z-index: 2;
+      background: rgba(0,0,0,.22);
+      backdrop-filter: blur(14px);
+      text-transform: uppercase;
+      letter-spacing:.22px;
+      font-size: 12px;
+      color: rgba(255,255,255,.85);
+    }
+    td.name{
+      text-align:left;
+      font-weight: 850;
+      cursor:pointer;
+    }
+    .total, .rank{ font-weight: 900; }
+
+    .miniBtn{
+      height: 34px;
+      padding: 0 10px;
+      border-radius: 12px;
+      border: 1px solid rgba(255,255,255,.18);
+      background: rgba(255,255,255,.10);
+      color: var(--text);
+      cursor:pointer;
+      font-weight: 850;
+      margin: 0 4px;
+      white-space:nowrap;
+    }
+
+    /* ✅ Position dropdown smaller */
+    select.position{
+      height: 34px !important;
+      min-width: 64px !important;
+      width: 64px !important;
+      padding: 0 8px !important;
+      border-radius: 12px !important;
+      text-align-last:center;
+    }
+
+    /* Modals */
+    .modalBackdrop{
+      position:fixed;
+      inset:0;
+      display:none;
+      align-items:center;
+      justify-content:center;
+      background: rgba(0,0,0,.55);
+      backdrop-filter: blur(8px);
+      z-index: 500;
+      padding: 14px;
+    }
+    .modal{
+      width: min(820px, 100%);
+      max-height: 88vh;
+      overflow:auto;
+      background: rgba(0,0,0,.24);
+      border: 1px solid rgba(255,255,255,.14);
+      border-radius: 22px;
+      box-shadow: 0 25px 90px rgba(0,0,0,.55);
+      backdrop-filter: blur(16px);
+    }
+    .modalInner{
+      background: var(--glass);
+      border: 1px solid rgba(255,255,255,.10);
+      border-radius: 22px;
+      padding: 16px;
+    }
+    .modalHead{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:12px;
+      margin-bottom: 12px;
+    }
+    .modalTitle{
+      font-weight: 950;
+      letter-spacing: .2px;
+      font-size: 18px;
+      text-transform: uppercase;
+    }
+    .iconBtn{
+      height: 40px;
+      width: 40px;
+      border-radius: 14px;
+      border: 1px solid rgba(255,255,255,.16);
+      background: rgba(255,255,255,.08);
+      color: var(--text);
+      cursor:pointer;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      font-size: 18px;
+      user-select:none;
+    }
+
+    .btn{
+      height: 44px;
+      padding: 0 14px;
+      border-radius: 14px;
+      border: 1px solid rgba(255,255,255,.18);
+      background: rgba(255,255,255,.10);
+      color: var(--text);
+      cursor:pointer;
+      font-weight: 900;
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      gap:10px;
+      user-select:none;
+      white-space:nowrap;
+    }
+    .btnPrimary{
+      border-color: rgba(47,107,255,.55);
+      background: linear-gradient(180deg, rgba(47,107,255,.90), rgba(47,107,255,.55));
+      box-shadow: 0 10px 30px rgba(47,107,255,.20);
+    }
+    .btnDanger{
+      border-color: rgba(255,77,77,.55);
+      background: linear-gradient(180deg, rgba(255,77,77,.80), rgba(255,77,77,.46));
+      box-shadow: 0 10px 30px rgba(255,77,77,.16);
+    }
+
+    .pbBtn{
+      text-decoration:none;
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      gap:10px;
+      height: 44px;
+      padding: 0 14px;
+      border-radius: 14px;
+      border: 1px solid rgba(255,255,255,.18);
+      background: rgba(255,255,255,.10);
+      color: var(--text);
+      font-weight: 900;
+      white-space:nowrap;
+    }
+
+    .actionList{ display:flex; flex-direction:column; gap:10px; margin-top:10px; }
+    .actionItem{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:10px;
+      padding: 12px 12px;
+      border-radius: 16px;
+      border: 1px solid rgba(255,255,255,.14);
+      background: rgba(255,255,255,.08);
+    }
+    .actionItem .left{ display:flex; flex-direction:column; gap:4px; min-width:0; }
+    .actionItem .name{ font-weight: 950; }
+    .actionItem .desc{ color: var(--muted); font-size: 12.5px; line-height: 1.25; }
+
+    .smallBox{
+      background: rgba(0,0,0,.28);
+      border: 1px solid rgba(255,255,255,.14);
+      border-radius: 18px;
+      padding: 14px;
+      backdrop-filter: blur(12px);
+    }
+
+    .distanceRow{
+      display:flex;
+      gap:10px;
+      align-items:center;
+      justify-content:space-between;
+      padding: 10px 10px;
+      border-radius: 14px;
+      border: 1px solid rgba(255,255,255,.12);
+      background: rgba(255,255,255,.06);
+      margin-top: 10px;
+    }
+    .distanceRow input{
+      min-width: 120px;
+      height: 40px;
+      border-radius: 12px;
+      border: 1px solid rgba(255,255,255,.16);
+      background: rgba(255,255,255,.10);
+      color: var(--text);
+      padding: 0 10px;
+      outline:none;
+    }
+
+    /* Confirm popup */
+    .confirmBackdrop{
+      position:fixed;
+      inset:0;
+      display:none;
+      align-items:center;
+      justify-content:center;
+      background: rgba(0,0,0,.55);
+      backdrop-filter: blur(8px);
+      z-index: 900;
+      padding: 14px;
+    }
+    .confirmBox{
+      width:min(420px, 100%);
+      background: rgba(0,0,0,.26);
+      border: 1px solid rgba(255,255,255,.14);
+      border-radius: 18px;
+      box-shadow: 0 25px 90px rgba(0,0,0,.55);
+      backdrop-filter: blur(16px);
+      padding: 14px;
+    }
+    .confirmBoxInner{
+      background: var(--glass);
+      border: 1px solid rgba(255,255,255,.10);
+      border-radius: 18px;
+      padding: 14px;
+      text-align:center;
+    }
+
+    /* Toast */
+    .toast{
+      position:fixed;
+      left:50%;
+      top: 18px;
+      transform:translateX(-50%);
+      width:min(520px, 92%);
+      background: rgba(0,0,0,.72);
+      border: 1px solid rgba(255,255,255,.16);
+      border-radius: 16px;
+      padding: 12px 14px;
+      color: rgba(255,255,255,.92);
+      box-shadow: 0 20px 60px rgba(0,0,0,.45);
+      backdrop-filter: blur(14px);
+      z-index: 950;
+      display:none;
+    }
+
+    /* Mobile */
+    @media (max-width: 640px){
+      .bg{ background-attachment:scroll; }
+
+      .topBar{ justify-content:center; }
+      .groupInline{ width:100%; }
+      .groupInline select{ width:100%; min-width:0; }
+
+      .row > *{ flex: 1 1 100%; min-width: 0; }
+      select, .input{ width:100%; min-width:0; }
+      .modalInner{ padding: 14px; }
+    }
+
+    /* Light mode */
+    body.light{
+      --text: rgba(10,12,16,.92);
+      --muted: rgba(10,12,16,.62);
+
+      --glass: rgba(255,255,255,.50);
+      --glass2: rgba(255,255,255,.66);
+      --stroke: rgba(10,12,16,.10);
+
+      background:
+        radial-gradient(1200px 700px at 30% 10%, rgba(47,107,255,.16), transparent 60%),
+        radial-gradient(900px 600px at 80% 20%, rgba(43,183,255,.12), transparent 55%),
+        linear-gradient(180deg, #f6f8ff, #eef3ff);
+    }
+    body.light .bg{ opacity:.12; }
+    body.light .bgOverlay{ background: rgba(255,255,255,.25); }
+    body.light th{ background: rgba(255,255,255,.75); color: rgba(10,12,16,.72); }
+
+    /* ==================================================
+   💧 AQUA ACCENT (clean + modern)
+=================================================== */
+
+/* Thin aqua glow on glass panes */
+.card, .panelNav, .header, .modalInner, .confirmBoxInner{
+  position:relative;
 }
-</style>
+.card::before, .panelNav::before, .header::before, .modalInner::before, .confirmBoxInner::before{
+  content:"";
+  position:absolute;
+  inset:0;
+  border-radius:inherit;
+  pointer-events:none;
+  background: linear-gradient(90deg,
+    transparent 0%,
+    rgba(43,183,255,.10) 25%,
+    rgba(43,183,255,.22) 50%,
+    rgba(43,183,255,.10) 75%,
+    transparent 100%
+  );
+  opacity:.85;
+  mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+  -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+  padding: 1px;
+}
+
+/* Aqua focus ring */
+select:focus, .input:focus, button:focus{
+  outline:none;
+  box-shadow:
+    0 0 0 3px var(--ring),
+    0 14px 40px rgba(0,0,0,.25);
+}
+
+/* Optional: active tab look */
+.isActive{
+  border-color: rgba(43,183,255,.55) !important;
+  background: linear-gradient(180deg, rgba(43,183,255,.22), rgba(255,255,255,.08)) !important;
+  box-shadow: 0 14px 36px rgba(43,183,255,.16);
+}
+
+/* Subtle aqua lift for main title */
+.header h1{
+  text-shadow:
+    0 12px 40px rgba(0,0,0,.35),
+    0 0 18px rgba(43,183,255,.18);
+}
+    
+  </style>
 </head>
 
 <body>
+  <div class="bg"></div>
+  <div class="bgOverlay"></div>
 
-<div class="bg"></div>
-<div class="bgOverlay"></div>
+  <div class="wrap">
 
-<div class="headerBar">
-    <h1>Ice Skating Short Track Ranking Dashboard</h1>
-
-    <!-- ✅ PB Tracker link button (top-right) -->
-    <a class="pbLinkBtn"
-       href="https://mandeepkoursardarni.github.io/PB_Tracker/"
-       target="_blank"
-       rel="noopener noreferrer">
-       PB Tracker
-    </a>
-</div>
-
-<!-- CONTROL ROW -->
-<div class="control-row">
-
-    <div class="control-col">
-        <input type="file" id="excelFile" accept=".xls,.xlsx">
-        <button onclick="uploadExcel()">Upload Excel</button>
+    <div class="header">
+      <h1>Ice Skating Short Track Ranking Dashboard</h1>
     </div>
 
-    <div class="control-col">
-        <input id="skaterName" placeholder="Manually enter the name">
-        <button onclick="addManual()">Add</button>
-        <select id="addGroupSelect">
-            <option>Alpha</option><option>Bravo</option><option>Charlie</option>
-            <option>Delta</option><option>Echo</option><option>Foxtrot</option>
-            <option>Golf</option><option>Hotel</option><option>India</option>
+    <!-- ✅ ONE PANEL: Setup + Actions + Select Group -->
+    <div class="topBar">
+      <button class="tabBtn" id="setupBtn">🧾 Setup</button>
+      <button class="tabBtn" id="actionsBtn">⚙️ Actions</button>
+
+      <div class="groupInline">
+        <div class="label">Select Group</div>
+        <select id="viewGroupSelect">
+          <option>Alpha</option><option>Bravo</option><option>Charlie</option>
+          <option>Delta</option><option>Echo</option><option>Foxtrot</option>
+          <option>Golf</option><option>Hotel</option><option>India</option>
         </select>
+      </div>
     </div>
 
-    <div class="control-col">
-        <button class="danger" onclick="resetGroup()">Reset Group</button>
-        <button class="danger" onclick="resetAll()">Reset All Groups</button>
-        <button onclick="openHelp()">Help</button>
-        <button id="addDistanceBtn" onclick="openActionsPopup()">Actions</button>
+    <!-- Rankings -->
+    <div class="card">
+      <div class="cardTitle" style="text-align:center;">Rankings</div>
 
-        <div class="theme-toggle-wrapper" style="gap:10px;">
-            <button id="themeToggle" class="theme-switch">
-                <div class="slider">
-                    <span class="moon">🌙</span>
-                    <span class="sun">☀️</span>
-                </div>
-            </button>
+      <div id="excelHeading" style="display:none; text-align:center; margin-top:8px; color:var(--muted); font-size:13px; line-height:1.35;"></div>
 
-            <!-- 🎁 PayPal button -->
-            <button class="giftBtn" onclick="openPaypalPopup()" title="Support via PayPal">🎁</button>
-        </div>
+      <div class="tableWrap">
+        <table id="scoreTable">
+          <thead>
+            <tr id="headerRow"></tr>
+          </thead>
+          <tbody></tbody>
+        </table>
+      </div>
+
+      <div style="text-align:center; color:var(--muted); font-size:12.5px; margin-top:10px;">
+        Tip: On phones, swipe sideways to see all distances.
+      </div>
     </div>
 
-</div>
-
-<!-- VIEW BAR -->
-<div class="viewBar">
-    <div id="excelHeading"
-         style="display:none; font-size:18px; margin-bottom:12px; white-space:normal;">
-    </div>
-
-    <label>Select Group</label><br>
-    <select id="viewGroupSelect" onchange="switchGroup()" style="width:220px;margin-top:8px;">
-        <option>Alpha</option><option>Bravo</option><option>Charlie</option>
-        <option>Delta</option><option>Echo</option><option>Foxtrot</option>
-        <option>Golf</option><option>Hotel</option><option>India</option>
-    </select>
-</div>
-
-<!-- ✅ SCOREBOARD TABLE (wrapped for mobile scroll) -->
-<div class="tableWrap">
-  <table id="scoreTable">
-      <thead>
-          <tr id="headerRow"></tr>
-      </thead>
-      <tbody></tbody>
-  </table>
-</div>
-
-<!-- CUTE GLASS ERROR POPUP -->
-<div id="excelErrorPopup">
-    <div class="excelErrorBox">
-        <h3>⚠️ Oops!</h3>
-
-        <p>
-            The Excel file looks a little <b>glitchy</b> or not in the expected format
-        </p>
-
-        <p style="margin-top:8px;">
-            You can try uploading again<br>
-            or enter the names manually — both work!
-        </p>
-
-        <button onclick="closeExcelErrorPopup()">Got it 😊</button>
-    </div>
-</div>
-
-<div id="editNamePopup">
-    <h2>Edit Name</h2>
-    <input id="editNameInput">
-    <br><br>
-    <button onclick="saveEditedName()">Save</button>
-    <button class="danger" onclick="closeEditName()">Cancel</button>
-</div>
-
-<div id="helpPopup">
-    <h2>Instructions</h2>
-
-    <p>📄 Start by uploading the official Excel file with clubs and divisions</p>
-    <p>✏️ You can also type skater names, and select group manually if that’s easier</p>
-
-    <p>🏅 Choose each skater’s race position in the race</p>
-    <p>✨ The dashboard automatically calculates scores & updates rank instantly</p>
-
-    <p>⚙️ Use the “Actions” button to add, edit or delete race distances (points stay the same)</p>
-
-    <p>📌 You can switch between different groups anytime — each group keeps its own list</p>
-    <p>📌 All entries are safely stored on YOUR DEVICE so you can return anytime</p>
-
-    <p>↩️ Made a mistake? You can undo or edit any name or position</p>
-    <p>🗑️ To start fresh with the group, reset the current group — or use “RESET ALL GROUPS” for a complete clean slate</p>
-
-    <p>🔗 The “PB Tracker” button on the top right opens a separate Personal Best (PB) tracking dashboard. You may use it to record & view long-term PBs across seasons and years. It opens in a new tab, so your current rankings here stay safe & unchanged</p>
-    
-
-    <p>Hope this makes tracking your skaters simple and fun!</p>
-    <p>💙 All the Best 💙</p>
-
-    <button onclick="closeHelp()">Close</button>
-</div>
-
-<!-- Confirm Popup -->
-<div id="confirmPopup" class="glassConfirm">
-    <div class="confirmBox">
-        <p id="confirmMessage">Are you sure?</p>
-        <div class="confirmButtons">
-            <button class="confirmCancel" onclick="closeConfirm(false)">Cancel</button>
-            <button class="confirmYes" onclick="closeConfirm(true)">Yes</button>
-        </div>
-    </div>
-</div>
-
-<!-- Actions Popup -->
-<div id="actionsPopup">
-    <div class="distanceBox">
-        <h2>Actions</h2>
-        <button onclick="openDistanceFromActions()">➕ Add New Distance</button>
-        <br><br>
-        <button onclick="openManageFromActions()">✏️ Edit / Delete Distances</button>
-        <br><br>
-        <button class="danger" onclick="closeActionsPopup()">Close</button>
-    </div>
-</div>
-
-<!-- ADD DISTANCE POPUP -->
-<div id="distancePopup">
-    <div class="distanceBox">
-        <h2>Add New Distance</h2>
-        <p>Enter numeric distance (e.g., 300)</p>
-        <input id="newDistanceInput"
-               placeholder="300"
-               oninput="this.value=this.value.replace(/[^0-9]/g,'');">
-        <br><br>
-        <button onclick="saveNewDistance()">Add</button>
-        <button class="danger" onclick="closeDistancePopup()">Cancel</button>
-    </div>
-</div>
-
-<!-- MANAGE DISTANCES POPUP -->
-<div id="manageDistancesPopup">
-    <div class="distanceBox">
-        <h2>Edit / Delete Distances</h2>
-        <p>You can change values (e.g., 300, 600) or delete rows.</p>
-        <div id="distancesList"></div>
-        <br>
-        <button onclick="saveManagedDistances()">Save</button>
-        <button class="danger" onclick="closeManageDistances()">Close</button>
-    </div>
-</div>
-
-<!-- ✅ PAYPAL POPUP -->
-<div id="paypalPopup">
-  <div class="paypalBox">
-    <h2 style="margin:0 0 8px 0;">Support this dashboard 💙</h2>
-    <p style="margin:0; opacity:0.95;">If this helps you, you can donate via PayPal</p>
-
-    <div class="paypalLinks">
-      <a href="https://www.paypal.me/MandeepSardarni/2" target="_blank"><button>$2</button></a>
-      <a href="https://www.paypal.me/MandeepSardarni/5" target="_blank"><button>$5</button></a>
-      <a href="https://www.paypal.me/MandeepSardarni/10" target="_blank"><button>$10</button></a>
-      <a href="https://www.paypal.me/MandeepSardarni" target="_blank"><button>Custom</button></a>
-    </div>
-
-    <br>
-    <button class="danger" onclick="closePaypalPopup()">Close</button>
   </div>
-</div>
+
+  <!-- Toast -->
+  <div class="toast" id="toast"></div>
+
+  <!-- CONFIRM -->
+  <div class="confirmBackdrop" id="confirmBackdrop">
+    <div class="confirmBox">
+      <div class="confirmBoxInner">
+        <div style="font-weight:950; letter-spacing:.2px; margin-bottom:8px;">Confirm</div>
+        <div id="confirmText" style="color:rgba(255,255,255,.90); line-height:1.5;"></div>
+        <div class="row" style="margin-top:12px;">
+          <button class="btn" onclick="closeConfirm(false)">Cancel</button>
+          <button class="btn btnPrimary" onclick="closeConfirm(true)">Yes</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- SETUP WINDOW -->
+  <div class="modalBackdrop" id="setupModal">
+    <div class="modal">
+      <div class="modalInner">
+        <div class="modalHead">
+          <div class="modalTitle">Setup</div>
+          <button class="iconBtn" onclick="closeModal('setupModal')">✕</button>
+        </div>
+
+        <div class="smallBox">
+          <div style="font-weight:900; margin-bottom:10px;">Excel Upload</div>
+          <div class="row" style="justify-content:flex-start;">
+            <input class="input" type="file" id="excelFile" accept=".xls,.xlsx" />
+            <button class="btn btnPrimary" type="button" onclick="uploadExcel()">⬆️ Upload Excel</button>
+          </div>
+        </div>
+
+        <div class="smallBox" style="margin-top:12px;">
+          <div style="font-weight:900; margin-bottom:10px;">Manual Entry</div>
+          <div class="row" style="justify-content:flex-start;">
+            <input class="input" id="skaterName" placeholder="Manually enter the skater name" />
+            <select id="addGroupSelect">
+              <option>Alpha</option><option>Bravo</option><option>Charlie</option>
+              <option>Delta</option><option>Echo</option><option>Foxtrot</option>
+              <option>Golf</option><option>Hotel</option><option>India</option>
+            </select>
+            <button class="btn btnPrimary" type="button" onclick="addManual()">➕ Add</button>
+          </div>
+        </div>
+
+        <div class="row" style="margin-top:12px; justify-content:center;">
+          <button class="tabBtn" type="button" id="themeToggleBtn">🌓 Theme</button>
+
+          <a class="tabBtn"
+             href="https://mandeepkoursardarni.github.io/PB_Tracker/"
+             target="_blank"
+             rel="noopener noreferrer"
+             style="text-decoration:none;">
+            🔗 PB Tracker
+          </a>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ACTIONS WINDOW -->
+  <div class="modalBackdrop" id="actionsModal">
+    <div class="modal">
+      <div class="modalInner">
+        <div class="modalHead">
+          <div class="modalTitle">Actions</div>
+          <button class="iconBtn" onclick="closeModal('actionsModal')">✕</button>
+        </div>
+
+        <div class="actionList">
+          <div class="actionItem">
+            <div class="left">
+              <div class="name">➕ Add Distance</div>
+              <div class="desc">Add a new distance column</div>
+            </div>
+            <button class="btn btnPrimary" type="button" onclick="openModal('addDistanceModal')">Open</button>
+          </div>
+
+          <div class="actionItem">
+            <div class="left">
+              <div class="name">✏️ Edit / Delete Distance</div>
+              <div class="desc">Rename or remove distance columns</div>
+            </div>
+            <button class="btn" type="button" onclick="openManageDistances()">Open</button>
+          </div>
+
+          <div class="actionItem">
+            <div class="left">
+              <div class="name">🗑️ Reset Present Group</div>
+              <div class="desc">Clear current group data</div>
+            </div>
+            <button class="btn btnDanger" type="button" onclick="resetGroup()">Reset</button>
+          </div>
+
+          <div class="actionItem">
+            <div class="left">
+              <div class="name">🧹 Reset All Groups</div>
+              <div class="desc">Clear everything (also resets distances)</div>
+            </div>
+            <button class="btn btnDanger" type="button" onclick="resetAll()">Reset</button>
+          </div>
+
+          <div class="actionItem">
+            <div class="left">
+              <div class="name">❓ Help</div>
+              <div class="desc">How to use this dashboard</div>
+            </div>
+            <button class="btn" type="button" onclick="openModal('helpModal')">Open</button>
+          </div>
+
+          <div class="actionItem">
+            <div class="left">
+              <div class="name">🎁 Donate</div>
+              <div class="desc">Support via PayPal</div>
+            </div>
+            <button class="btn" type="button" onclick="openModal('donateModal')">Open</button>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+  <!-- ADD DISTANCE -->
+  <div class="modalBackdrop" id="addDistanceModal">
+    <div class="modal">
+      <div class="modalInner">
+        <div class="modalHead">
+          <div class="modalTitle">Add Distance</div>
+          <button class="iconBtn" onclick="closeModal('addDistanceModal')">✕</button>
+        </div>
+
+        <div class="smallBox">
+          <div style="color:rgba(255,255,255,.90); line-height:1.5;">
+            Enter numeric distance (example: 300)
+          </div>
+          <div class="row" style="margin-top:10px;">
+            <input id="newDistanceInput" class="input" placeholder="300" oninput="this.value=this.value.replace(/[^0-9]/g,'');" />
+            <button class="btn btnPrimary" onclick="saveNewDistance()">Add</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- MANAGE DISTANCES -->
+  <div class="modalBackdrop" id="manageDistancesModal">
+    <div class="modal">
+      <div class="modalInner">
+        <div class="modalHead">
+          <div class="modalTitle">Edit / Delete Distances</div>
+          <button class="iconBtn" onclick="closeModal('manageDistancesModal')">✕</button>
+        </div>
+
+        <div class="smallBox">
+          <div style="color:rgba(255,255,255,.90); line-height:1.5;">
+            You can change the numbers or delete rows.
+          </div>
+          <div id="distancesList"></div>
+
+          <div class="row" style="margin-top:12px;">
+            <button class="btn btnPrimary" onclick="saveManagedDistances()">Save</button>
+            <button class="btn" onclick="closeModal('manageDistancesModal')">Close</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- HELP -->
+  <div class="modalBackdrop" id="helpModal">
+    <div class="modal">
+      <div class="modalInner">
+        <div class="modalHead">
+          <div class="modalTitle">Help</div>
+          <button class="iconBtn" onclick="closeModal('helpModal')">✕</button>
+        </div>
+
+        <div class="smallBox" style="line-height:1.65;">
+          <div>📄 Start by uploading the official Excel file with clubs and divisions</div>
+          <div>✏️ You can also add skaters manually (and choose the group)</div>
+           <div style="margin-top:10px;">🏅 Choose each skater’s race position</div>
+           <div>✨ Scores are updated based on ranks automatically</div>
+
+           <div style="margin-top:10px;">⚙️ Use <b>Actions</b> to add / edit / delete distances</div>
+           <div style="margin-top:10px;">📌 You can switch groups anytime — each group keeps its own list</div>
+           <div>📌 All entries are stored on <b>your device only</b>, nothing is uploaded anywhere, it is safe ☺️</div>
+           <div style="margin-top:10px;">↩️ Use <b>Undo</b> to revert the last change for that skater</div>
+
+           <div style="margin-top:10px;">🗑️ <b>Reset Present Group</b> clears only the selected group</div>
+           <div>🧹 <b>Reset All Groups</b> clears everything and restores default distances</div>
+           <div style="margin-top:10px;">
+            🔗 <b>PB Tracker</b> is a separate dashboard for long-term PBs across seasons and years
+          </div>
+          <div style="margin-top:12px; text-align:center; color:rgba(255,255,255,.90); font-weight:900;">
+            💙 All the Best 💙
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+  <!-- DONATE -->
+  <div class="modalBackdrop" id="donateModal">
+    <div class="modal">
+      <div class="modalInner">
+        <div class="modalHead">
+          <div class="modalTitle">Donate</div>
+          <button class="iconBtn" onclick="closeModal('donateModal')">✕</button>
+        </div>
+
+        <div class="smallBox" style="text-align:center;">
+          <div style="color:rgba(255,255,255,.92); line-height:1.5;">
+            If this dashboard helps you, you can support it via PayPal 💙
+          </div>
+
+          <div class="row" style="margin-top:12px;">
+            <a class="pbBtn" href="https://www.paypal.me/MandeepSardarni/2" target="_blank" rel="noopener noreferrer">$2</a>
+            <a class="pbBtn" href="https://www.paypal.me/MandeepSardarni/5" target="_blank" rel="noopener noreferrer">$5</a>
+            <a class="pbBtn" href="https://www.paypal.me/MandeepSardarni/10" target="_blank" rel="noopener noreferrer">$10</a>
+            <a class="pbBtn" href="https://www.paypal.me/MandeepSardarni" target="_blank" rel="noopener noreferrer">Custom</a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- EDIT NAME -->
+  <div class="modalBackdrop" id="editNameModal">
+    <div class="modal">
+      <div class="modalInner">
+        <div class="modalHead">
+          <div class="modalTitle">Edit Name</div>
+          <button class="iconBtn" onclick="closeModal('editNameModal')">✕</button>
+        </div>
+
+        <div class="smallBox">
+          <div class="row">
+            <input id="editNameInput" class="input" placeholder="Enter new name" />
+            <button class="btn btnPrimary" onclick="saveEditedName()">Save</button>
+            <button class="btn" onclick="closeModal('editNameModal')">Cancel</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
 
 <script>
 /* ==================================================
-      THEME TOGGLE
+   STORAGE + THEME
 =================================================== */
-const toggleBtn = document.getElementById("themeToggle");
-let savedTheme = localStorage.getItem("theme") || "dark";
-
-applyTheme(savedTheme);
-
-toggleBtn.onclick = () => {
-    let newTheme =
-      document.body.classList.contains("dark-mode") ? "light" : "dark";
-    applyTheme(newTheme);
-};
-
-function applyTheme(mode) {
-    if (mode === "light") {
-        document.body.classList.remove("dark-mode");
-        document.body.classList.add("light-mode");
-        toggleBtn.classList.remove("dark");
-    } else {
-        document.body.classList.remove("light-mode");
-        document.body.classList.add("dark-mode");
-        toggleBtn.classList.add("dark");
-    }
-    localStorage.setItem("theme", mode);
+function toast(msg, ms=2600){
+  const t=document.getElementById('toast');
+  t.textContent = msg;
+  t.style.display='block';
+  clearTimeout(toast._t);
+  toast._t=setTimeout(()=>t.style.display='none', ms);
 }
+
+function applySavedTheme(){
+  const th = localStorage.getItem("theme") || "dark";
+  if(th === "light") document.body.classList.add("light");
+  else document.body.classList.remove("light");
+}
+applySavedTheme();
+
+document.getElementById('themeToggleBtn').addEventListener('click', () => {
+  document.body.classList.toggle('light');
+  localStorage.setItem("theme", document.body.classList.contains("light") ? "light" : "dark");
+});
 
 /* ==================================================
-      ERROR POPUP
+   MODALS
 =================================================== */
-function showExcelErrorPopup() {
-    document.getElementById("excelErrorPopup").style.display = "block";
-}
-function closeExcelErrorPopup() {
-    document.getElementById("excelErrorPopup").style.display = "none";
-}
+function openModal(id){ document.getElementById(id).style.display='flex'; }
+function closeModal(id){ document.getElementById(id).style.display='none'; }
+
+// click outside closes
+["setupModal","actionsModal","addDistanceModal","manageDistancesModal","helpModal","donateModal","editNameModal"]
+.forEach(id=>{
+  const el=document.getElementById(id);
+  el.addEventListener('click', (e)=>{ if(e.target.id===id) closeModal(id); });
+});
+
+// nav buttons
+document.getElementById('setupBtn').addEventListener('click', ()=>openModal('setupModal'));
+document.getElementById('actionsBtn').addEventListener('click', ()=>openModal('actionsModal'));
 
 /* ==================================================
-      CONFIRM POPUP
+   CONFIRM
 =================================================== */
 let confirmCallback = null;
-
-function showConfirm(message, callback) {
-    document.getElementById("confirmMessage").textContent = message;
-    document.getElementById("confirmPopup").style.display = "flex";
-    confirmCallback = callback;
+function showConfirm(message, cb){
+  confirmCallback = cb;
+  document.getElementById('confirmText').textContent = message;
+  document.getElementById('confirmBackdrop').style.display='flex';
 }
-
-function closeConfirm(result) {
-    document.getElementById("confirmPopup").style.display = "none";
-    if (confirmCallback) confirmCallback(result);
+function closeConfirm(result){
+  document.getElementById('confirmBackdrop').style.display='none';
+  if(confirmCallback) confirmCallback(result);
+  confirmCallback = null;
 }
+document.getElementById('confirmBackdrop').addEventListener('click', (e)=>{
+  if(e.target.id==='confirmBackdrop') closeConfirm(false);
+});
 
 /* ==================================================
-      EXCEL HELPERS
+   DATA MODEL
 =================================================== */
-const validGroups = [
-    "ALPHA","BRAVO","CHARLIE","DELTA","ECHO",
-    "FOXTROT","GOLF","HOTEL","INDIA"
-];
+const groupNames = ["Alpha","Bravo","Charlie","Delta","Echo","Foxtrot","Golf","Hotel","India"];
+const validGroups = groupNames.map(g=>g.toUpperCase());
 
-function isName(x){
-    if(!x || typeof x!=="string")return false;
-    x=x.trim();
-    if(x.length<2)return false;
-    if(/[^A-Za-zÀ-ÿ '-]/.test(x))return false;
-    return true;
-}
-
-/* ==================================================
-      DATA STRUCTURE
-=================================================== */
-let groups = {};
-["Alpha","Bravo","Charlie","Delta","Echo",
- "Foxtrot","Golf","Hotel","India"]
-.forEach(g=>groups[g]={skaters:[],history:{}});
-
-if(localStorage.getItem("groupsData")){
-    try {
-        groups = JSON.parse(localStorage.getItem("groupsData"));
-    } catch(e) {
-        console.error("Bad local groupsData, resetting", e);
-        ["Alpha","Bravo","Charlie","Delta","Echo",
-         "Foxtrot","Golf","Hotel","India"]
-         .forEach(g=>groups[g]={skaters:[],history:{}});        
-    }
-}
-
-let currentGroup = "Alpha";
-
-/* ---- Dynamic distances ---- */
-const defaultDistances = ["400","500","800","1000","1200","1500"];
-let distances = JSON.parse(localStorage.getItem("distances") || "null") || [...defaultDistances];
-
-function saveDistances(){
-    localStorage.setItem("distances", JSON.stringify(distances));
-}
-
-/* Points remain same */
 const points = {
-    1:1000,2:816,3:666,4:543,5:443,
-    6:362,7:295,8:241,9:196,10:160,
-    11:130,12:106,13:86,14:70,15:57
+  1:1000,2:816,3:666,4:543,5:443,
+  6:362,7:295,8:241,9:196,10:160,
+  11:130,12:106,13:86,14:70,15:57
 };
 
-function saveData(){
-    localStorage.setItem("groupsData",JSON.stringify(groups));
-}
+const defaultDistances = ["400","500","800","1000"];
+let distances = JSON.parse(localStorage.getItem("distances") || "null") || [...defaultDistances];
 
-/* ==================================================
-      EXCEL UPLOAD (with heading)
-=================================================== */
-function uploadExcel(){
-    let file=document.getElementById("excelFile").files[0];
-    if(!file)return alert("Please select an Excel file.");
+let groups = {};
+groupNames.forEach(g=>groups[g]={skaters:[], history:{}});
 
-    let reader=new FileReader();
-
-    reader.onload=function(e){
-        let data=new Uint8Array(e.target.result);
-        let workbook=XLSX.read(data,{type:'array'});
-
-        /* Heading from Club/Clubs/Divisions A1 if present */
-        let sheetNames=["Club","Clubs","Divisions"];
-        let headingText="";
-
-        for (let s of sheetNames){
-            let sheet=workbook.Sheets[s];
-            if(!sheet) continue;
-            let a1 = sheet["A1"] ? String(sheet["A1"].v).trim() : "";
-            if(a1.length > 10){
-                headingText=a1;
-                break;
-            }
-        }
-        if(headingText){
-            let h=document.getElementById("excelHeading");
-            h.textContent=headingText;
-            h.style.display="block";
-        }
-
-        /* --- ORIGINAL name & group extraction from Divisions --- */
-        let sheet=workbook.Sheets["Divisions"];
-        if(!sheet)return showExcelErrorPopup();
-
-        let rows=XLSX.utils.sheet_to_json(sheet,{header:1});
-        let detectedGroup=null;
-        let addedCount=0;
-
-        for(let r=0;r<rows.length;r++){
-            let row=rows[r];
-            if(!row)continue;
-
-            let cell=row[7];
-            if(typeof cell==="string"){
-                let G=cell.trim().toUpperCase();
-                if(validGroups.includes(G)){
-                    detectedGroup=G.charAt(0)+G.slice(1).toLowerCase();
-                    continue;
-                }
-            }
-
-            let cells=[
-                (row[1]||"").toString().trim(),
-                (row[2]||"").toString().trim(),
-                (row[3]||"").toString().trim(),
-                (row[4]||"").toString().trim()
-            ];
-
-            let combined=(cells.join(" ").toUpperCase()).replace(/\s+/g," ").trim();
-            let headerBlacklist=[
-                "FIRST","LAST","FULL","NAME",
-                "SKATER","ATHLETE","COMPETITOR","PARTICIPANT"
-            ];
-            if(headerBlacklist.some(h=>combined.includes(h))) continue;
-
-            let name=null;
-            if(isName(cells[0]) && isName(cells[1])) name=cells[0]+" "+cells[1];
-            else if(isName(cells[1]) && isName(cells[2])) name=cells[1]+" "+cells[2];
-            else if(isName(cells[2]) && isName(cells[3])) name=cells[2]+" "+cells[3];
-
-            if(name && detectedGroup){
-                name=name.replace(/[0-9]/g,"").replace(/\s+/g," ").trim();
-                addSkaterToGroup(name,detectedGroup);
-                addedCount++;
-            }
-        }
-
-        if(addedCount===0) showExcelErrorPopup();
-        else { saveData(); loadGroupTable(); }
-    };
-
-    reader.readAsArrayBuffer(file);
-}
-
-/* ==================================================
-      RESET (with distances reset on Reset All)
-=================================================== */
-function resetGroup(){
-    showConfirm("Reset this group?", function(yes){
-        if(!yes)return;
-        groups[currentGroup]={skaters:[],history:{}};
-        saveData();
-        loadGroupTable();
-    });
-}
-
-function resetAll(){
-    showConfirm("Reset all groups and distances?", function(yes){
-        if(!yes)return;
-        ["Alpha","Bravo","Charlie","Delta","Echo",
-         "Foxtrot","Golf","Hotel","India"]
-         .forEach(g=>groups[g]={skaters:[],history:{}});
-
-        saveData();
-
-        // Reset distances back to default
-        distances=[...defaultDistances];
-        saveDistances();
-
-        loadGroupTable();
-    });
-}
-
-/* ==================================================
-      ADD SKATER
-=================================================== */
-function addManual(){
-    let name=document.getElementById("skaterName").value.trim();
-    if(!name)return;
-
-    let g=document.getElementById("addGroupSelect").value;
-    addSkaterToGroup(name,g);
-
-    document.getElementById("skaterName").value="";
-}
-
-function addSkaterToGroup(name,group){
-    let G=groups[group];
-    if(!G.skaters.includes(name)){
-        G.skaters.push(name);
-
-        // create history object; distHistory keys match current distances
-        let distHistoryObj = {};
-        distances.forEach(d=>distHistoryObj[d]=[]);
-        G.history[name]={
-            distHistory: distHistoryObj,
-            stack:[]
-        };
+function safeLoad(){
+  if(localStorage.getItem("groupsData")){
+    try{
+      const parsed = JSON.parse(localStorage.getItem("groupsData"));
+      if(parsed && typeof parsed === "object"){
+        groups = parsed;
+        groupNames.forEach(g=>{
+          if(!groups[g]) groups[g]={skaters:[], history:{}};
+          if(!groups[g].skaters) groups[g].skaters=[];
+          if(!groups[g].history) groups[g].history={};
+        });
+      }
+    }catch(e){
+      console.warn("Bad groupsData, resetting", e);
+      groupNames.forEach(g=>groups[g]={skaters:[], history:{}});
+      saveData();
     }
-    saveData();
-    if(group===currentGroup) loadGroupTable();
+  }
+}
+safeLoad();
+
+let currentGroup = (localStorage.getItem("currentGroup") || "Alpha");
+if(!groupNames.includes(currentGroup)) currentGroup="Alpha";
+
+function saveData(){
+  localStorage.setItem("groupsData", JSON.stringify(groups));
+  localStorage.setItem("currentGroup", currentGroup);
+}
+function saveDistances(){ localStorage.setItem("distances", JSON.stringify(distances)); }
+
+function isName(x){
+  if(!x || typeof x!=="string") return false;
+  x=x.trim();
+  if(x.length<2) return false;
+  if(/[^A-Za-zÀ-ÿ '-]/.test(x)) return false;
+  return true;
 }
 
 /* ==================================================
-      VIEW GROUP
+   GROUP SWITCH
 =================================================== */
-function switchGroup(){
-    currentGroup=document.getElementById("viewGroupSelect").value;
-    loadGroupTable();
-}
+const viewSel = document.getElementById("viewGroupSelect");
+viewSel.value = currentGroup;
+viewSel.addEventListener("change", ()=>{
+  currentGroup = viewSel.value;
+  saveData();
+  loadGroupTable();
+});
 
 /* ==================================================
-      HEADER ROW (dynamic)
+   TABLE BUILD
 =================================================== */
 function buildHeaderRow(){
-    let row = document.getElementById("headerRow");
-    row.innerHTML = "<th>Name</th>";
-    distances.forEach(d=>{
-        row.innerHTML += "<th>"+d+"</th>";
-    });
-    row.innerHTML += "<th>Total</th><th>Rank</th><th>Undo / Delete</th>";
+  const row = document.getElementById("headerRow");
+  row.innerHTML = "<th style='text-align:left;'>Name</th>";
+  distances.forEach(d=> row.innerHTML += `<th>${d}</th>`);
+  row.innerHTML += "<th>Total</th><th>Rank</th><th>Undo / Delete</th>";
 }
 
-/* ==================================================
-      TABLE BUILD (dynamic distances)
-=================================================== */
-function loadGroupTable() {
-    buildHeaderRow();
+function createDropdown(name, dist){
+  const dd = document.createElement("select");
+  dd.className="position";
+  dd.setAttribute("data-dist", dist);
 
-    let tbody = document.querySelector("#scoreTable tbody");
-    tbody.innerHTML = "";
+  dd.innerHTML = `<option value="">-</option>`;
+  const count = groups[currentGroup].skaters.length;
+  for(let i=1;i<=count;i++) dd.innerHTML += `<option value="${i}">${i}</option>`;
 
-    let groupData = groups[currentGroup];
+  dd.onchange = ()=>{
+    const prevVal = dd.getAttribute("data-last") || "";
+    const newVal = dd.value;
 
-    groupData.skaters.forEach(name => {
-        let row = document.createElement("tr");
-        row.dataset.name = name;
+    if(!groups[currentGroup].history[name]){
+      groups[currentGroup].history[name] = { stack: [] };
+    }
+    groups[currentGroup].history[name].stack.push({ dist, prev: prevVal, current: newVal });
 
-        let html = `<td class="name" onclick="openEditName('${name}')">${name}</td>`;
-        distances.forEach(()=>{ html += "<td></td>"; });
-
-        html += `
-            <td class="total">0</td>
-            <td class="rank">-</td>
-            <td>
-                <button class="danger" onclick="undo('${name}')">Undo</button>
-                <button class="danger" onclick="deleteSkater('${name}')">Delete</button>
-            </td>
-        `;
-
-        row.innerHTML = html;
-
-        distances.forEach((dist, i) => {
-            let cell = row.children[i + 1];
-            let dd = createDropdown(name, dist);
-            cell.appendChild(dd);
-        });
-
-        tbody.appendChild(row);
-    });
-
-    rebuildDropdowns();
-
-    // Restore positions from history
-    groupData.skaters.forEach(name => {
-        let row = document.querySelector(`tr[data-name="${name}"]`);
-        let history = groups[currentGroup].history[name];
-        if(!history) return;
-
-        distances.forEach(dist => {
-            let dd = row.querySelector(`select[data-dist="${dist}"]`);
-            if(!dd) return;
-
-            let stack = history.stack || [];
-            let lastEntry = [...stack].reverse().find(s => s.dist === dist);
-
-            if (lastEntry && lastEntry.current !== "") {
-                dd.value = lastEntry.current;
-                dd.setAttribute("data-last", lastEntry.current);
-            } else {
-                dd.value = "";
-                dd.setAttribute("data-last", "");
-            }
-        });
-    });
-
+    dd.setAttribute("data-last", newVal);
     updateScores();
-}
-
-/* ==================================================
-      DROPDOWNS
-=================================================== */
-function createDropdown(name,dist){
-    let dd=document.createElement("select");
-    dd.className="position";
-    dd.setAttribute("data-dist", dist);
-
-    dd.innerHTML=`<option value="">-</option>`;
-    let count=groups[currentGroup].skaters.length;
-
-    for(let i=1;i<=count;i++) dd.innerHTML+=`<option>${i}</option>`;
-    
-    dd.onchange = () => {
-        let prevVal = dd.getAttribute("data-last") || "";
-        let newVal = dd.value;
-
-        if(!groups[currentGroup].history[name]){
-            groups[currentGroup].history[name] = {distHistory:{},stack:[]};
-        }
-
-        groups[currentGroup].history[name].stack.push({
-            dist: dist,
-            prev: prevVal,
-            current: newVal
-        });
-
-        dd.setAttribute("data-last", newVal);
-
-        updateScores();
-        saveData();
-    };
-
-    return dd;
+    saveData();
+  };
+  return dd;
 }
 
 function rebuildDropdowns(){
-    let count=groups[currentGroup].skaters.length;
+  const count = groups[currentGroup].skaters.length;
+  document.querySelectorAll("select.position").forEach(dd=>{
+    const old = dd.value;
+    dd.innerHTML = `<option value="">-</option>`;
+    for(let i=1;i<=count;i++) dd.innerHTML += `<option value="${i}">${i}</option>`;
+    dd.value = old;
+  });
+}
 
-    document.querySelectorAll("select.position").forEach(dd=>{
-        let old=dd.value;
-        dd.innerHTML=`<option value="">-</option>`;
-        for(let i=1;i<=count;i++) dd.innerHTML+=`<option>${i}</option>`;
-        dd.value=old;
+function loadGroupTable(){
+  buildHeaderRow();
+  const tbody = document.querySelector("#scoreTable tbody");
+  tbody.innerHTML = "";
+
+  const groupData = groups[currentGroup];
+  groupData.skaters.forEach(n=>{
+    if(!groupData.history[n]) groupData.history[n] = { stack: [] };
+    if(!groupData.history[n].stack) groupData.history[n].stack = [];
+  });
+
+  groupData.skaters.forEach(name=>{
+    const tr = document.createElement("tr");
+    tr.dataset.name = name;
+
+    let html = `<td class="name" onclick="openEditName('${escapeQuotes(name)}')">${escapeHtml(name)}</td>`;
+    distances.forEach(()=>{ html += "<td></td>"; });
+
+    html += `
+      <td class="total">0</td>
+      <td class="rank">-</td>
+      <td>
+        <button class="miniBtn danger" onclick="undo('${escapeQuotes(name)}')">Undo</button>
+        <button class="miniBtn danger" onclick="deleteSkater('${escapeQuotes(name)}')">Delete</button>
+      </td>
+    `;
+    tr.innerHTML = html;
+
+    distances.forEach((dist, i)=>{
+      const cell = tr.children[i+1];
+      cell.appendChild(createDropdown(name, dist));
     });
+
+    tbody.appendChild(tr);
+  });
+
+  rebuildDropdowns();
+
+  // restore last values
+  groupData.skaters.forEach(name=>{
+    const row = document.querySelector(`tr[data-name="${cssEscape(name)}"]`);
+    const h = groupData.history[name];
+    distances.forEach(dist=>{
+      const dd = row.querySelector(`select[data-dist="${cssEscape(dist)}"]`);
+      if(!dd) return;
+      const stack = h.stack || [];
+      const last = [...stack].reverse().find(s=>s.dist===dist);
+      const v = (last && last.current !== undefined) ? last.current : "";
+      dd.value = v;
+      dd.setAttribute("data-last", v);
+    });
+  });
+
+  updateScores();
 }
 
 /* ==================================================
-      SCORE + SORT + MEDALS
+   SCORE + SORT + MEDALS
 =================================================== */
 function updateScores(){
-    let tbody=document.querySelector("#scoreTable tbody");
-    let rows=[...tbody.querySelectorAll("tr")];
+  const tbody = document.querySelector("#scoreTable tbody");
+  const rows = [...tbody.querySelectorAll("tr")];
 
-    rows.forEach(row=>{
-        let total=0;
-        row.querySelectorAll("select.position").forEach(dd=>{
-            let pos=Number(dd.value);
-            if(points[pos]) total+=points[pos];
-        });
-        row.querySelector(".total").textContent=total;
+  rows.forEach(row=>{
+    let total=0;
+    row.querySelectorAll("select.position").forEach(dd=>{
+      const pos = Number(dd.value);
+      if(points[pos]) total += points[pos];
     });
+    row.querySelector(".total").textContent = total;
+  });
 
-    let scored=rows.filter(r=>Number(r.querySelector(".total").textContent)>0);
-    let unscored=rows.filter(r=>Number(r.querySelector(".total").textContent)===0);
+  const scored = rows.filter(r=>Number(r.querySelector(".total").textContent)>0);
+  const unscored = rows.filter(r=>Number(r.querySelector(".total").textContent)===0);
 
-    scored.sort((a,b)=>
-        Number(b.querySelector(".total").textContent) -
-        Number(a.querySelector(".total").textContent)
-    );
+  scored.sort((a,b)=>
+    Number(b.querySelector(".total").textContent) -
+    Number(a.querySelector(".total").textContent)
+  );
 
-    tbody.innerHTML="";
-    scored.forEach(r=>tbody.appendChild(r));
-    unscored.forEach(r=>tbody.appendChild(r));
+  tbody.innerHTML="";
+  scored.forEach(r=>tbody.appendChild(r));
+  unscored.forEach(r=>tbody.appendChild(r));
 
-    scored.forEach((row,index)=>{
-        let rank=index+1;
-        let nm=row.dataset.name;
+  scored.forEach((row,index)=>{
+    const rank=index+1;
+    const nm=row.dataset.name;
+    const cell=row.querySelector(".name");
 
-        if(rank===1) row.querySelector(".name").innerHTML="🥇 "+nm;
-        else if(rank===2) row.querySelector(".name").innerHTML="🥈 "+nm;
-        else if(rank===3) row.querySelector(".name").innerHTML="🥉 "+nm;
-        else row.querySelector(".name").innerHTML=nm;
+    if(rank===1) cell.innerHTML = "🥇 " + escapeHtml(nm);
+    else if(rank===2) cell.innerHTML = "🥈 " + escapeHtml(nm);
+    else if(rank===3) cell.innerHTML = "🥉 " + escapeHtml(nm);
+    else cell.innerHTML = escapeHtml(nm);
 
-        row.querySelector(".rank").textContent=rank;
-    });
+    row.querySelector(".rank").textContent=rank;
+  });
 
-    unscored.forEach(r=>{
-        r.querySelector(".name").innerHTML=r.dataset.name;
-        r.querySelector(".rank").textContent="-";
-    });
+  unscored.forEach(r=>{
+    r.querySelector(".name").innerHTML = escapeHtml(r.dataset.name);
+    r.querySelector(".rank").textContent="-";
+  });
 }
 
 /* ==================================================
-      UNDO
+   UNDO / DELETE / EDIT NAME
 =================================================== */
 function undo(name){
-    let h=groups[currentGroup].history[name];
-    if(!h || h.stack.length===0)return;
+  const h = groups[currentGroup].history[name];
+  if(!h || !h.stack || h.stack.length===0) return;
 
-    let last=h.stack.pop();
-    let dist=last.dist;
-    let prev=last.prev;
+  const last = h.stack.pop();
+  const dist = last.dist;
+  const prev = (last.prev ?? "");
 
-    let row=document.querySelector(`tr[data-name="${name}"]`);
-    let dd=row.querySelector(`select[data-dist="${dist}"]`);
+  const row = document.querySelector(`tr[data-name="${cssEscape(name)}"]`);
+  if(!row) return;
+  const dd = row.querySelector(`select[data-dist="${cssEscape(dist)}"]`);
+  if(!dd) return;
 
-    dd.value=prev;
-    dd.setAttribute("data-last",prev);
+  dd.value = prev;
+  dd.setAttribute("data-last", prev);
 
-    updateScores();
-    saveData();
+  updateScores();
+  saveData();
 }
 
-/* ==================================================
-      DELETE SKATER
-=================================================== */
 function deleteSkater(name){
-    groups[currentGroup].skaters =
-      groups[currentGroup].skaters.filter(n=>n!==name);
+  showConfirm(`Delete "${name}" from ${currentGroup}?`, (yes)=>{
+    if(!yes) return;
 
-    if(groups[currentGroup].history[name]){
-        delete groups[currentGroup].history[name];
-    }
+    groups[currentGroup].skaters = groups[currentGroup].skaters.filter(n=>n!==name);
+    if(groups[currentGroup].history[name]) delete groups[currentGroup].history[name];
 
     saveData();
     loadGroupTable();
+  });
 }
 
-/* ==================================================
-      EDIT NAME
-=================================================== */
-let nameBeingEdited=null;
-
+let nameBeingEdited = null;
 function openEditName(name){
-    nameBeingEdited=name;
-    document.getElementById("editNameInput").value=name;
-    document.getElementById("editNamePopup").style.display="block";
-}
-
-function closeEditName(){
-    document.getElementById("editNamePopup").style.display="none";
-    nameBeingEdited=null;
+  nameBeingEdited = name;
+  document.getElementById("editNameInput").value = name;
+  openModal("editNameModal");
 }
 
 function saveEditedName(){
-    let newName=document.getElementById("editNameInput").value.trim();
-    if(!newName)return;
+  const newName = document.getElementById("editNameInput").value.trim();
+  if(!newName) return;
 
-    let g=groups[currentGroup];
-    let idx=g.skaters.indexOf(nameBeingEdited);
-    if(idx!==-1) g.skaters[idx]=newName;
+  if(groups[currentGroup].skaters.includes(newName) && newName !== nameBeingEdited){
+    toast("That name already exists in this group.");
+    return;
+  }
 
-    g.history[newName]=g.history[nameBeingEdited];
-    delete g.history[nameBeingEdited];
+  const g = groups[currentGroup];
+  const idx = g.skaters.indexOf(nameBeingEdited);
+  if(idx !== -1) g.skaters[idx] = newName;
 
+  g.history[newName] = g.history[nameBeingEdited] || { stack: [] };
+  delete g.history[nameBeingEdited];
+
+  saveData();
+  closeModal("editNameModal");
+  loadGroupTable();
+}
+
+/* ==================================================
+   ADD SKATER (MANUAL)
+=================================================== */
+function addSkaterToGroup(name, group){
+  name = name.replace(/[0-9]/g,"").replace(/\s+/g," ").trim();
+  if(!name) return;
+
+  const G = groups[group];
+  if(!G.skaters.includes(name)){
+    G.skaters.push(name);
+    if(!G.history[name]) G.history[name] = { stack: [] };
+    if(!G.history[name].stack) G.history[name].stack = [];
+  }
+
+  saveData();
+  if(group === currentGroup) loadGroupTable();
+}
+
+function addManual(){
+  const name = document.getElementById("skaterName").value.trim();
+  if(!name) return;
+
+  const group = document.getElementById("addGroupSelect").value;
+  addSkaterToGroup(name, group);
+  document.getElementById("skaterName").value = "";
+}
+
+/* ==================================================
+   RESET
+=================================================== */
+function resetGroup(){
+  showConfirm(`Reset the ${currentGroup} group?`, (yes)=>{
+    if(!yes) return;
+    groups[currentGroup] = { skaters: [], history: {} };
     saveData();
-    closeEditName();
     loadGroupTable();
+  });
 }
 
-/* ==================================================
-      HELP
-=================================================== */
-function openHelp(){
-    document.getElementById("helpPopup").style.display="block";
-}
-function closeHelp(){
-    document.getElementById("helpPopup").style.display="none";
-}
+function resetAll(){
+  showConfirm("Reset ALL groups and restore default distances?", (yes)=>{
+    if(!yes) return;
 
-/* ==================================================
-      ACTIONS + DISTANCE POPUPS
-=================================================== */
-function openActionsPopup(){
-    document.getElementById("actionsPopup").style.display="flex";
-}
-function closeActionsPopup(){
-    document.getElementById("actionsPopup").style.display="none";
-}
-
-function openDistancePopup(){
-    document.getElementById("distancePopup").style.display="flex";
-}
-function closeDistancePopup(){
-    document.getElementById("distancePopup").style.display="none";
-}
-
-function openDistanceFromActions(){
-    closeActionsPopup();
-    openDistancePopup();
-}
-
-function openManageFromActions(){
-    closeActionsPopup();
-    openManageDistances();
-}
-
-function saveNewDistance(){
-    let d = document.getElementById("newDistanceInput").value.trim();
-    if(!d){
-        alert("Enter a distance (numbers only)");
-        return;
-    }
-    if(distances.includes(d)){
-        alert("Distance already exists.");
-        return;
-    }
-
-    distances.push(d);   // append at the end
+    groupNames.forEach(g=>groups[g]={skaters:[], history:{}});
+    distances = [...defaultDistances];
     saveDistances();
-
-    // ensure distHistory keys exist
-    Object.keys(groups).forEach(gName=>{
-        let g = groups[gName];
-        Object.keys(g.history).forEach(skater=>{
-            if(g.history[skater].distHistory && !g.history[skater].distHistory[d]){
-                g.history[skater].distHistory[d]=[];
-            }
-        });
-    });
-
-    document.getElementById("newDistanceInput").value = "";
-    closeDistancePopup();
+    saveData();
 
     loadGroupTable();
-    alert("Distance "+d+" added!");
+  });
 }
 
 /* ==================================================
-      MANAGE DISTANCES (EDIT / DELETE)
+   DISTANCES (ADD / EDIT / DELETE)
 =================================================== */
-function openManageDistances(){
-    const popup = document.getElementById("manageDistancesPopup");
-    const list = document.getElementById("distancesList");
-    list.innerHTML = "";
+function saveNewDistance(){
+  const d = (document.getElementById("newDistanceInput").value || "").trim();
+  if(!d){ toast("Enter a distance (numbers only)."); return; }
+  if(distances.includes(d)){ toast("Distance already exists."); return; }
 
-    distances.forEach((d, idx) => {
-        const row = document.createElement("div");
-        row.className = "distanceRow";
-        row.innerHTML = `
-            <input type="text"
-                   value="${d}"
-                   data-index="${idx}"
-                   oninput="this.value=this.value.replace(/[^0-9]/g,'');">
-            <button class="danger" onclick="deleteDistance(${idx})">Delete</button>
-        `;
-        list.appendChild(row);
-    });
+  distances.push(d);
+  saveDistances();
 
-    popup.style.display = "flex";
+  document.getElementById("newDistanceInput").value = "";
+  closeModal("addDistanceModal");
+
+  loadGroupTable();
+  toast(`Distance ${d} added.`);
 }
 
-function closeManageDistances(){
-    document.getElementById("manageDistancesPopup").style.display="none";
+function openManageDistances(){
+  const list = document.getElementById("distancesList");
+  list.innerHTML = "";
+
+  distances.forEach((d, idx)=>{
+    const row = document.createElement("div");
+    row.className = "distanceRow";
+    row.innerHTML = `
+      <div style="display:flex; gap:10px; align-items:center;">
+        <div style="font-weight:900; opacity:.9;">#${idx+1}</div>
+        <input type="text" value="${escapeHtml(d)}" data-index="${idx}"
+               oninput="this.value=this.value.replace(/[^0-9]/g,'');" />
+      </div>
+      <button class="btn btnDanger" style="height:40px;" onclick="deleteDistance(${idx})">Delete</button>
+    `;
+    list.appendChild(row);
+  });
+
+  openModal("manageDistancesModal");
 }
 
 function deleteDistance(idx){
-    distances.splice(idx,1);
-    if(distances.length === 0){
-        distances = [...defaultDistances];
-    }
-    saveDistances();
-    openManageDistances();
+  distances.splice(idx, 1);
+  if(distances.length === 0) distances = [...defaultDistances];
+  saveDistances();
+  openManageDistances();
 }
 
 function saveManagedDistances(){
-    const inputs = document.querySelectorAll("#distancesList input");
-    let newDists = [];
+  const inputs = document.querySelectorAll("#distancesList input");
+  let newD = [];
+  inputs.forEach(inp=>{
+    const v = inp.value.trim();
+    if(v) newD.push(v);
+  });
 
-    inputs.forEach(inp => {
-        let v = inp.value.trim();
-        if(v) newDists.push(v);
-    });
+  newD = newD.filter((v, i)=> newD.indexOf(v) === i);
 
-    if(newDists.length === 0){
-        alert("At least one distance is required. Restoring defaults.");
-        newDists = [...defaultDistances];
-    }
+  if(newD.length === 0){
+    toast("At least one distance required. Restoring defaults.");
+    newD = [...defaultDistances];
+  }
 
-    distances = newDists;
-    saveDistances();
+  distances = newD;
+  saveDistances();
 
-    Object.keys(groups).forEach(gName=>{
-        let g = groups[gName];
-        Object.keys(g.history).forEach(skater=>{
-            let h = g.history[skater];
-            if(!h.distHistory) h.distHistory = {};
-            distances.forEach(d=>{
-                if(!h.distHistory[d]) h.distHistory[d] = [];
-            });
-        });
-    });
-
-    closeManageDistances();
-    loadGroupTable();
+  closeModal("manageDistancesModal");
+  loadGroupTable();
+  toast("Distances saved.");
 }
 
 /* ==================================================
-      🎁 PAYPAL POPUP
+   EXCEL UPLOAD
 =================================================== */
-function openPaypalPopup(){
-    document.getElementById("paypalPopup").style.display = "flex";
-}
-function closePaypalPopup(){
-    document.getElementById("paypalPopup").style.display = "none";
+function uploadExcel(){
+  const file = document.getElementById("excelFile").files[0];
+  if(!file){ toast("Please choose an Excel file."); return; }
+
+  const reader = new FileReader();
+  reader.onload = function(e){
+    try{
+      const data = new Uint8Array(e.target.result);
+      const workbook = XLSX.read(data, {type:'array'});
+
+      const sheetNames = ["Club","Clubs","Divisions"];
+      let headingText = "";
+
+      for(const s of sheetNames){
+        const sheet = workbook.Sheets[s];
+        if(!sheet) continue;
+        const a1 = sheet["A1"] ? String(sheet["A1"].v).trim() : "";
+        if(a1.length > 10){ headingText = a1; break; }
+      }
+
+      const headingEl = document.getElementById("excelHeading");
+      if(headingText){
+        headingEl.textContent = headingText;
+        headingEl.style.display = "block";
+      } else {
+        headingEl.style.display = "none";
+      }
+
+      const sheet = workbook.Sheets["Divisions"];
+      if(!sheet){
+        toast("Excel format not expected (missing 'Divisions' sheet).");
+        return;
+      }
+
+      const rows = XLSX.utils.sheet_to_json(sheet, {header:1});
+      let detectedGroup = null;
+      let addedCount = 0;
+
+      for(let r=0; r<rows.length; r++){
+        const row = rows[r];
+        if(!row) continue;
+
+        const cell = row[7];
+        if(typeof cell === "string"){
+          const G = cell.trim().toUpperCase();
+          if(validGroups.includes(G)){
+            detectedGroup = G.charAt(0) + G.slice(1).toLowerCase();
+            continue;
+          }
+        }
+
+        const cells = [
+          (row[1]||"").toString().trim(),
+          (row[2]||"").toString().trim(),
+          (row[3]||"").toString().trim(),
+          (row[4]||"").toString().trim()
+        ];
+
+        const combined = (cells.join(" ").toUpperCase()).replace(/\s+/g," ").trim();
+        const headerBlacklist = ["FIRST","LAST","FULL","NAME","SKATER","ATHLETE","COMPETITOR","PARTICIPANT"];
+        if(headerBlacklist.some(h=>combined.includes(h))) continue;
+
+        let name = null;
+        if(isName(cells[0]) && isName(cells[1])) name = cells[0]+" "+cells[1];
+        else if(isName(cells[1]) && isName(cells[2])) name = cells[1]+" "+cells[2];
+        else if(isName(cells[2]) && isName(cells[3])) name = cells[2]+" "+cells[3];
+
+        if(name && detectedGroup){
+          name = name.replace(/[0-9]/g,"").replace(/\s+/g," ").trim();
+          addSkaterToGroup(name, detectedGroup);
+          addedCount++;
+        }
+      }
+
+      if(addedCount === 0){
+        toast("Excel looks glitchy or not in expected format. Try again or add names manually.");
+      }else{
+        saveData();
+        loadGroupTable();
+        toast(`Added ${addedCount} skaters to ${detectedGroup}.`);
+      }
+    }catch(err){
+      console.error(err);
+      toast("Could not read this Excel file. Try a different file.");
+    }
+  };
+  reader.readAsArrayBuffer(file);
 }
 
 /* ==================================================
-      INITIAL LOAD
+   UTILS
+=================================================== */
+function escapeQuotes(s){
+  return String(s).replace(/\\/g,"\\\\").replace(/'/g,"\\'");
+}
+function escapeHtml(s){
+  return String(s)
+    .replace(/&/g,"&amp;")
+    .replace(/</g,"&lt;")
+    .replace(/>/g,"&gt;")
+    .replace(/"/g,"&quot;")
+    .replace(/'/g,"&#039;");
+}
+function cssEscape(s){
+  return String(s).replace(/"/g,'\\"');
+}
+
+/* ==================================================
+   INITIAL LOAD
 =================================================== */
 loadGroupTable();
 </script>
