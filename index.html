@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -568,6 +567,7 @@ select:focus, .input:focus, button:focus{
 
     <div class="header">
       <h1>Ice Skating Short Track Ranking Dashboard</h1>
+      <div class="sub">Offline-friendly • Saved on your device • Use Setup to add skaters</div>
     </div>
 
     <!-- ✅ ONE PANEL: Setup + Actions + Select Group -->
@@ -801,7 +801,7 @@ select:focus, .input:focus, button:focus{
            <div style="margin-top:10px;">🗑️ <b>Reset Present Group</b> clears only the selected group</div>
            <div>🧹 <b>Reset All Groups</b> clears everything and restores default distances</div>
            <div style="margin-top:10px;">
-            🔗 <b>PB Tracker</b> is a separate webpage, designed to track Personal Best's of individual skater
+            🔗 <b>PB Tracker</b> is a separate dashboard for long-term PBs across seasons and years
           </div>
           <div style="margin-top:12px; text-align:center; color:rgba(255,255,255,.90); font-weight:900;">
             💙 All the Best 💙
@@ -927,7 +927,8 @@ const points = {
   6:362,7:295,8:241,9:196,10:160,
   11:130,12:106,13:86,14:70,15:57
 };
-const defaultDistances = ["400","500","1000","1200"];
+
+const defaultDistances = ["400","500","800","1000","1200","1500"];
 let distances = JSON.parse(localStorage.getItem("distances") || "null") || [...defaultDistances];
 
 let groups = {};
