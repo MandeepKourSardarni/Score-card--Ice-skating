@@ -528,7 +528,7 @@
     <div class="card">
       <div class="cardTitle">Rankings <br> </div>
       <div style="text-align:center; color:var(--muted); font-size:12.5px; margin-top:10px;">
-        Note: These results are for final races only (not heats), and the scores are based on Ontario Short Track Speed Skating guidelines.
+        Note: These results are for final races only (not heats), and the scores are based on Ontario Short Track Speed Skating guidelines
       </div>
 
       <div id="excelHeading" style="display:none; text-align:center; margin-top:8px; color:var(--muted); font-size:13px; line-height:1.35;"></div>
@@ -544,6 +544,7 @@
 
       <div style="text-align:center; color:var(--muted); font-size:12.5px; margin-top:10px;">
         Tip: On phones, swipe sideways to view all distances <br>
+        Note: You can add skater names manually, edit/add/delete distances, update scores for ranking in "Actions" tab
       </div>
     </div>
 
@@ -641,6 +642,15 @@
             <button class="btn" type="button" onclick="openManageDistances()">Open</button>
           </div>
 
+          <!-- ✅ NEW: EDIT POINTS -->
+          <div class="actionItem">
+            <div class="left">
+              <div class="name">🎯 Edit Points</div>
+              <div class="desc">Customize score values by finishing rank</div>
+            </div>
+            <button class="btn" type="button" onclick="openPointsEditor()">Open</button>
+          </div>
+
           <div class="actionItem">
             <div class="left">
               <div class="name">🗑️ Reset Present Group</div>
@@ -718,6 +728,32 @@
           <div class="row" style="margin-top:12px;">
             <button class="btn btnPrimary" onclick="saveManagedDistances()">Save</button>
             <button class="btn" onclick="closeModal('manageDistancesModal')">Close</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ✅ NEW: EDIT POINTS MODAL -->
+  <div class="modalBackdrop" id="pointsModal">
+    <div class="modal">
+      <div class="modalInner">
+        <div class="modalHead">
+          <div class="modalTitle">Edit Points</div>
+          <button class="iconBtn" onclick="closeModal('pointsModal')">✕</button>
+        </div>
+
+        <div class="smallBox">
+          <div style="color:rgba(255,255,255,.90); line-height:1.5;">
+            Change points for each finishing rank. Higher is better.
+          </div>
+
+          <div id="pointsList" style="margin-top:12px;"></div>
+
+          <div class="row" style="margin-top:12px;">
+            <button class="btn btnPrimary" onclick="savePoints()">Save</button>
+            <button class="btn" onclick="restoreDefaultPoints()">Restore Defaults</button>
+            <button class="btn" onclick="closeModal('pointsModal')">Close</button>
           </div>
         </div>
       </div>
@@ -837,7 +873,7 @@ document.getElementById('themeToggleBtn').addEventListener('click', () => {
 function openModal(id){ document.getElementById(id).style.display='flex'; }
 function closeModal(id){ document.getElementById(id).style.display='none'; }
 
-["setupModal","actionsModal","addDistanceModal","manageDistancesModal","helpModal","donateModal","editNameModal"]
+["setupModal","actionsModal","addDistanceModal","manageDistancesModal","pointsModal","helpModal","donateModal","editNameModal"]
 .forEach(id=>{
   const el=document.getElementById(id);
   el.addEventListener('click', (e)=>{ if(e.target.id===id) closeModal(id); });
@@ -870,11 +906,29 @@ document.getElementById('confirmBackdrop').addEventListener('click', (e)=>{
 const groupNames = ["Alpha","Bravo","Charlie","Delta","Echo","Foxtrot","Golf","Hotel","India"];
 const validGroups = groupNames.map(g=>g.toUpperCase());
 
-const points = {
+/* ✅ DEFAULT POINTS + USER-EDITABLE POINTS (saved on device) */
+const defaultPoints = {
   1:1000,2:816,3:666,4:543,5:443,
   6:362,7:295,8:241,9:196,10:160,
   11:130,12:106,13:86,14:70,15:57
 };
+
+function loadPoints(){
+  try{
+    const saved = JSON.parse(localStorage.getItem("pointsMap") || "null");
+    if(saved && typeof saved === "object") return saved;
+  }catch(e){}
+  return {...defaultPoints};
+}
+let points = loadPoints();
+
+function savePointsToStorage(){
+  localStorage.setItem("pointsMap", JSON.stringify(points));
+}
+function restorePointsToDefault(){
+  points = {...defaultPoints};
+  savePointsToStorage();
+}
 
 /* ✅ defaults changed to your new set */
 const defaultDistances = ["400","500","800","1000"];
@@ -933,6 +987,64 @@ viewSel.addEventListener("change", ()=>{
   saveData();
   loadGroupTable();
 });
+
+/* ==================================================
+   POINTS EDITOR
+=================================================== */
+function openPointsEditor(){
+  renderPointsEditor();
+  openModal("pointsModal");
+}
+
+function renderPointsEditor(){
+  const box = document.getElementById("pointsList");
+  const maxRank = 15;
+  let html = "";
+
+  for(let r=1; r<=maxRank; r++){
+    const val = (points[r] ?? 0);
+    html += `
+      <div class="distanceRow">
+        <div style="display:flex; gap:10px; align-items:center;">
+          <div style="font-weight:950; opacity:.9; width:86px;">Rank ${r}</div>
+          <input type="text"
+                 value="${String(val)}"
+                 data-rank="${r}"
+                 oninput="this.value=this.value.replace(/[^0-9]/g,'');"
+                 style="min-width:140px;" />
+        </div>
+      </div>
+    `;
+  }
+
+  box.innerHTML = html;
+}
+
+function savePoints(){
+  const inputs = document.querySelectorAll("#pointsList input[data-rank]");
+  const newMap = {};
+  inputs.forEach(inp=>{
+    const r = Number(inp.dataset.rank);
+    const v = Number((inp.value || "0").trim());
+    newMap[r] = Number.isFinite(v) ? v : 0;
+  });
+
+  points = newMap;
+  savePointsToStorage();
+  closeModal("pointsModal");
+  updateScores();
+  toast("Points saved.");
+}
+
+function restoreDefaultPoints(){
+  showConfirm("Restore default points values?", (yes)=>{
+    if(!yes) return;
+    restorePointsToDefault();
+    renderPointsEditor();
+    updateScores();
+    toast("Default points restored.");
+  });
+}
 
 /* ==================================================
    DISTANCE DUPLICATES SUPPORT
@@ -1215,8 +1327,11 @@ function resetAll(){
     groupNames.forEach(g=>groups[g]={skaters:[], history:{}});
     distances = [...defaultDistances];
     saveDistances();
-    saveData();
 
+    /* ✅ also restore points to default on Reset All */
+    restorePointsToDefault();
+
+    saveData();
     loadGroupTable();
   });
 }
@@ -1297,7 +1412,6 @@ function saveManagedDistances(){
   // Normalize duplicates into (2), (3)...
   const used = {};
   const normalized = raw.map(v=>{
-    // keep only number if user typed "400 (2)" etc -> take base number
     const base = String(v).trim().match(/^(\d+)/)?.[1] || String(v).trim();
     used[base] = (used[base] || 0) + 1;
     return used[base] === 1 ? base : `${base} (${used[base]})`;
