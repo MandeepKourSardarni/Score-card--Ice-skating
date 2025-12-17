@@ -567,7 +567,6 @@ select:focus, .input:focus, button:focus{
 
     <div class="header">
       <h1>Ice Skating Short Track Ranking Dashboard</h1>
-      <div class="sub">Offline-friendly • Saved on your device • Use Setup to add skaters</div>
     </div>
 
     <!-- ✅ ONE PANEL: Setup + Actions + Select Group -->
@@ -928,7 +927,7 @@ const points = {
   11:130,12:106,13:86,14:70,15:57
 };
 
-const defaultDistances = ["400","500","800","1000","1200","1500"];
+const defaultDistances = ["400","500","800","1000"];
 let distances = JSON.parse(localStorage.getItem("distances") || "null") || [...defaultDistances];
 
 let groups = {};
