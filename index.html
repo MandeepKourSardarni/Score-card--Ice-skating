@@ -1472,6 +1472,7 @@ function saveManagedDistances(){
    EXCEL UPLOAD function
 =================================================== */
 
+
 function uploadExcel(){
   const file = document.getElementById("excelFile").files[0];
   if(!file){ toast("Please choose an Excel file."); return; }
@@ -1482,23 +1483,6 @@ function uploadExcel(){
       const data = new Uint8Array(e.target.result);
       const workbook = XLSX.read(data, {type:'array'});
 
-      // Optional heading extraction (keep your logic)
-      const sheetNames = ["Club","Clubs","Divisions"];
-      let headingText = "";
-      for(const s of sheetNames){
-        const sheet = workbook.Sheets[s];
-        if(!sheet) continue;
-        const a1 = sheet["A1"] ? String(sheet["A1"].v).trim() : "";
-        if(a1.length > 10){ headingText = a1; break; }
-      }
-      const headingEl = document.getElementById("excelHeading");
-      if(headingText){
-        headingEl.textContent = headingText;
-        headingEl.style.display = "block";
-      } else {
-        headingEl.style.display = "none";
-      }
-
       const sheet = workbook.Sheets["Divisions"];
       if(!sheet){
         toast("Excel format not expected (missing 'Divisions' sheet).");
@@ -1507,89 +1491,170 @@ function uploadExcel(){
 
       const rows = XLSX.utils.sheet_to_json(sheet, {header:1});
 
-      // ✅ fallback: start with CURRENT selected group (so we never skip early rows)
+      // ✅ Always start with the currently selected group as fallback
       let detectedGroup = currentGroup;
-      let addedCount = 0;
 
-      // optional: track skipped rows for debugging
-      let skippedBecauseNoName = 0;
+      // ✅ Dynamically detected columns for First/Last name
+      let firstCol = null;
+      let lastCol  = null;
 
+      let addedUnique = 0;
+      const addedSet = new Set(); // to count unique actually added
+      let skipped = 0;
+
+      // helper: normalize cell
+      const norm = (v)=> (v===undefined || v===null) ? "" : String(v).trim();
+
+      // helper: is a "name-like" cell (more tolerant than isName)
+      function isNameLikeCell(s){
+        s = norm(s);
+        if(!s) return false;
+        // allow letters, accents, spaces, apostrophe, hyphen
+        if(/[^A-Za-zÀ-ÿ '\-]/.test(s)) return false;
+        // avoid tiny fragments
+        if(s.replace(/\s+/g," ").length < 2) return false;
+        return true;
+      }
+
+      // helper: is header row containing "First Name" and "Last Name"
+      function detectHeaderCols(row){
+        const up = row.map(c => norm(c).toUpperCase());
+        let f = up.findIndex(x => x === "FIRST NAME" || x === "FIRSTNAME");
+        let l = up.findIndex(x => x === "LAST NAME"  || x === "LASTNAME"  || x === "SURNAME");
+        if(f !== -1 && l !== -1) return {f, l};
+        return null;
+      }
+
+      // helper: detect group marker in any cell (not just column H)
+      function detectGroupInRow(row){
+        for(const c of row){
+          const G = norm(c).toUpperCase();
+          if(validGroups.includes(G)){
+            return G.charAt(0) + G.slice(1).toLowerCase();
+          }
+        }
+        return null;
+      }
+
+      // helper: build full name using detected First/Last columns, supporting multi-part last names
+      function buildNameFromCols(row){
+        if(firstCol === null || lastCol === null) return null;
+
+        const first = norm(row[firstCol]);
+        if(!isNameLikeCell(first)) return null;
+
+        // last name may be split across multiple cells: LastName + next cells
+        let lastParts = [];
+        for(let i = lastCol; i < row.length; i++){
+          const part = norm(row[i]);
+          if(!part) break;
+
+          // stop if we hit something that clearly isn't name-like
+          if(!isNameLikeCell(part)) break;
+
+          lastParts.push(part);
+        }
+        if(lastParts.length === 0) return null;
+
+        const full = (first + " " + lastParts.join(" ")).replace(/\s+/g," ").trim();
+        return full;
+      }
+
+      // helper: fallback name extraction if header columns were not detected yet
+      function buildNameByScanning(row){
+        const cells = row.map(norm).filter(Boolean);
+
+        // skip obvious header rows
+        const combined = cells.join(" ").toUpperCase();
+        const headerBlacklist = ["FIRST", "LAST", "FULL", "NAME", "SKATER", "ATHLETE", "COMPETITOR", "PARTICIPANT"];
+        if(headerBlacklist.some(h=>combined.includes(h))) return null;
+
+        // look for two consecutive name-like cells
+        for(let i=0;i<row.length-1;i++){
+          const a = norm(row[i]);
+          const b = norm(row[i+1]);
+          if(isNameLikeCell(a) && isNameLikeCell(b)){
+            // allow b to include more parts from i+2, i+3... if they look name-like
+            let lastParts=[b];
+            for(let j=i+2;j<row.length;j++){
+              const p = norm(row[j]);
+              if(!p) break;
+              if(!isNameLikeCell(p)) break;
+              lastParts.push(p);
+            }
+            return (a + " " + lastParts.join(" ")).replace(/\s+/g," ").trim();
+          }
+        }
+
+        // if a single cell contains full name
+        const maybeFull = row.map(norm).find(x => isNameLikeCell(x) && x.split(/\s+/).length >= 2);
+        return maybeFull || null;
+      }
+
+      // ✅ main loop
       for(let r=0; r<rows.length; r++){
         const row = rows[r];
         if(!row) continue;
 
-        // ✅ Detect group from column H (index 7) if present
-        const groupCell = row[7];
-        if(typeof groupCell === "string"){
-          const G = groupCell.trim().toUpperCase();
-          if(validGroups.includes(G)){
-            detectedGroup = G.charAt(0) + G.slice(1).toLowerCase();
-            continue; // this row is a group marker, not a name row
-          }
+        // empty row?
+        if(row.every(c => !norm(c))) continue;
+
+        // detect header row (repeated blocks)
+        const cols = detectHeaderCols(row);
+        if(cols){
+          firstCol = cols.f;
+          lastCol = cols.l;
+          continue; // header row isn't a data row
         }
 
-        // pull likely name columns (your existing pattern)
-        const cells = [
-          (row[1]||"").toString().trim(),
-          (row[2]||"").toString().trim(),
-          (row[3]||"").toString().trim(),
-          (row[4]||"").toString().trim()
-        ];
-
-        // skip obvious header rows
-        const combined = (cells.join(" ").toUpperCase()).replace(/\s+/g," ").trim();
-        const headerBlacklist = ["FIRST","LAST","FULL","NAME","SKATER","ATHLETE","COMPETITOR","PARTICIPANT"];
-        if(headerBlacklist.some(h=>combined.includes(h))) continue;
-
-        // ✅ Build name with better tolerance:
-        // - allow last name with spaces (e.g., "Mori Madruga")
-        // - allow first name with spaces (e.g., "Samarveer Singh")
-        let name = null;
-
-        // Common: First + Last
-        if(isName(cells[0]) && isName(cells[1])) name = `${cells[0]} ${cells[1]}`;
-
-        // Sometimes shifted by one column
-        else if(isName(cells[1]) && isName(cells[2])) name = `${cells[1]} ${cells[2]}`;
-        else if(isName(cells[2]) && isName(cells[3])) name = `${cells[2]} ${cells[3]}`;
-
-        // Sometimes full name is in a single cell (fallback)
-        else {
-          const maybeFull =
-            cells.find(c => isName(c) && c.split(/\s+/).length >= 2) || "";
-          if(maybeFull) name = maybeFull;
+        // detect group markers anywhere in row
+        const g = detectGroupInRow(row);
+        if(g){
+          detectedGroup = g;
+          continue;
         }
+
+        // try building name from detected columns, else scan
+        let name = buildNameFromCols(row);
+        if(!name) name = buildNameByScanning(row);
 
         if(name){
           name = name.replace(/[0-9]/g,"").replace(/\s+/g," ").trim();
-          addSkaterToGroup(name, detectedGroup);
-          addedCount++;
+
+          // add + count unique in THIS upload run
+          const key = detectedGroup + "||" + name;
+          if(!addedSet.has(key)){
+            addedSet.add(key);
+            addSkaterToGroup(name, detectedGroup);
+            addedUnique++;
+          }
         }else{
-          // for debugging only
-          if(cells.join("").trim().length > 0) skippedBecauseNoName++;
+          skipped++;
         }
       }
 
       saveData();
       loadGroupTable();
 
-      if(addedCount === 0){
-        toast("No skaters found. Try a different file or add names manually.");
-      }else{
-        // ✅ show which group we ended up using
-        toast(`Added ${addedCount} skaters. (Fallback group: ${currentGroup})`);
-      }
+      toast(`Uploaded ${addedUnique} names into groups (skipped ${skipped} non-name rows).`);
 
-      // optional: console debug
-      console.log("Added:", addedCount, "Skipped(no name):", skippedBecauseNoName);
+      // ✅ Helpful debug in console
+      console.log("Upload summary:", {
+        addedUnique,
+        skipped,
+        detectedFirstCol: firstCol,
+        detectedLastCol: lastCol
+      });
 
     }catch(err){
       console.error(err);
       toast("Could not read this Excel file. Try a different file.");
     }
   };
+
   reader.readAsArrayBuffer(file);
 }
+
 
 
 /* ==================================================
