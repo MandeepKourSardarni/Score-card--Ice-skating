@@ -237,25 +237,6 @@
       font-weight: 850;
       cursor:pointer;
     }
-    th.nameCol,
-td.name{
-  position: sticky;
-  left: 0;
-  z-index: 3;
-}
-th.nameCol{
-  z-index: 6;
-  background: rgba(0,0,0,.35);
-  backdrop-filter: blur(16px);
-}
-td.name{
-  background: rgba(0,0,0,.28);
-  backdrop-filter: blur(14px);
-}
-
-/* Light mode sticky backgrounds */
-body.light td.name{ background: rgba(255,255,255,.72); }
-body.light th.nameCol{ background: rgba(255,255,255,.86); }
     .total, .rank{ font-weight: 900; }
 
     .miniBtn{
@@ -540,7 +521,7 @@ body.light th.nameCol{ background: rgba(255,255,255,.86); }
         <option>Alpha</option><option>Bravo</option><option>Charlie</option>
         <option>Delta</option><option>Echo</option><option>Foxtrot</option>
         <option>Golf</option><option>Hotel</option><option>India</option>
-        <option>Juliet</option><option>Kilo</option><option>London</option>
+        <option>Japan</option><option>Kilo</option><option>London</option>
       </select>
     </div>
 
@@ -614,7 +595,7 @@ body.light th.nameCol{ background: rgba(255,255,255,.86); }
               <option>Alpha</option><option>Bravo</option><option>Charlie</option>
               <option>Delta</option><option>Echo</option><option>Foxtrot</option>
               <option>Golf</option><option>Hotel</option><option>India</option>
-              <option>Juliet</option><option>Kilo</option><option>London</option>
+              <option>Japan</option><option>Kilo</option><option>London</option>
             </select>
             <button class="btn btnPrimary" type="button" onclick="addManual()">➕ Add</button>
           </div>
@@ -931,7 +912,7 @@ document.getElementById('confirmBackdrop').addEventListener('click', (e)=>{
 /* ==================================================
    DATA MODEL
 =================================================== */
-const groupNames = ["Alpha","Bravo","Charlie","Delta","Echo","Foxtrot","Golf","Hotel","India","Juliet","Kilo","London"];
+const groupNames = ["Alpha","Bravo","Charlie","Delta","Echo","Foxtrot","Golf","Hotel","India","Japan","Kilo","London"];
 const validGroups = groupNames.map(g=>g.toUpperCase());
 
 /* ✅ DEFAULT POINTS + USER-EDITABLE POINTS (saved on device) */
@@ -1031,7 +1012,7 @@ function renderPointsEditor(){
 
   for(let r=1; r<=maxRank; r++){
     const val = (points[r] ?? 0);
-    html += 
+    html += `
       <div class="distanceRow">
         <div style="display:flex; gap:10px; align-items:center;">
           <div style="font-weight:950; opacity:.9; width:86px;">Rank ${r}</div>
@@ -1042,7 +1023,7 @@ function renderPointsEditor(){
                  style="min-width:140px;" />
         </div>
       </div>
-    ;
+    `;
   }
 
   box.innerHTML = html;
@@ -1087,7 +1068,7 @@ function makeUniqueDistanceLabel(base){
   base = String(base).trim();
   const re = baseRe(base);
   const count = distances.filter(d => re.test(d)).length;
-  return count === 0 ? base : ${base} (${count + 1});
+  return count === 0 ? base : `${base} (${count + 1})`;
 }
 
 /* ==================================================
@@ -1095,10 +1076,9 @@ function makeUniqueDistanceLabel(base){
 =================================================== */
 function buildHeaderRow(){
   const row = document.getElementById("headerRow");
-  row.innerHTML = "<th class='nameCol' style='text-align:left;'>Name</th>";
-
+  row.innerHTML = "<th style='text-align:left;'>Name</th>";
   distances.forEach(d=>{
-    row.innerHTML += <th>${escapeHtml(d)}</th>;
+    row.innerHTML += `<th>${escapeHtml(d)}</th>`;
   });
   row.innerHTML += "<th>Total</th><th>Rank</th><th>Undo / Delete</th>";
 }
@@ -1108,9 +1088,9 @@ function createDropdown(name, dist){
   dd.className="position";
   dd.setAttribute("data-dist", dist);
 
-  dd.innerHTML = <option value="">-</option>;
+  dd.innerHTML = `<option value="">-</option>`;
   const count = groups[currentGroup].skaters.length;
-  for(let i=1;i<=count;i++) dd.innerHTML += <option value="${i}">${i}</option>;
+  for(let i=1;i<=count;i++) dd.innerHTML += `<option value="${i}">${i}</option>`;
 
   dd.onchange = ()=>{
     const prevVal = dd.getAttribute("data-last") || "";
@@ -1136,8 +1116,8 @@ function rebuildDropdowns(){
   const count = groups[currentGroup].skaters.length;
   document.querySelectorAll("select.position").forEach(dd=>{
     const old = dd.value;
-    dd.innerHTML = <option value="">-</option>;
-    for(let i=1;i<=count;i++) dd.innerHTML += <option value="${i}">${i}</option>;
+    dd.innerHTML = `<option value="">-</option>`;
+    for(let i=1;i<=count;i++) dd.innerHTML += `<option value="${i}">${i}</option>`;
     dd.value = old;
   });
 }
@@ -1158,17 +1138,17 @@ function loadGroupTable(){
     const tr = document.createElement("tr");
     tr.dataset.name = name;
 
-    let html = <td class="name" onclick="openEditName('${escapeQuotes(name)}')">${escapeHtml(name)}</td>;
+    let html = `<td class="name" onclick="openEditName('${escapeQuotes(name)}')">${escapeHtml(name)}</td>`;
     distances.forEach(()=>{ html += "<td></td>"; });
 
-    html += 
+    html += `
       <td class="total">0</td>
       <td class="rank">-</td>
       <td>
         <button class="miniBtn danger" onclick="undo('${escapeQuotes(name)}')">Undo</button>
         <button class="miniBtn danger" onclick="deleteSkater('${escapeQuotes(name)}')">Delete</button>
       </td>
-    ;
+    `;
     tr.innerHTML = html;
 
     distances.forEach((dist, i)=>{
@@ -1184,10 +1164,10 @@ function loadGroupTable(){
 
   // restore last values per distance
   groupData.skaters.forEach(name=>{
-    const row = document.querySelector(tr[data-name="${cssEscape(name)}"]);
+    const row = document.querySelector(`tr[data-name="${cssEscape(name)}"]`);
     const h = groupData.history[name];
     distances.forEach(dist=>{
-      const dd = row.querySelector(select[data-dist="${cssEscape(dist)}"]);
+      const dd = row.querySelector(`select[data-dist="${cssEscape(dist)}"]`);
       if(!dd) return;
       const stack = h.stack || [];
       const last = [...stack].reverse().find(s=>s.dist===dist);
@@ -1258,9 +1238,9 @@ function undo(name){
   const dist = last.dist;
   const prev = (last.prev ?? "");
 
-  const row = document.querySelector(tr[data-name="${cssEscape(name)}"]);
+  const row = document.querySelector(`tr[data-name="${cssEscape(name)}"]`);
   if(!row) return;
-  const dd = row.querySelector(select[data-dist="${cssEscape(dist)}"]);
+  const dd = row.querySelector(`select[data-dist="${cssEscape(dist)}"]`);
   if(!dd) return;
 
   dd.value = prev;
@@ -1271,7 +1251,7 @@ function undo(name){
 }
 
 function deleteSkater(name){
-  showConfirm(Delete "${name}" from ${currentGroup}?, (yes)=>{
+  showConfirm(`Delete "${name}" from ${currentGroup}?`, (yes)=>{
     if(!yes) return;
 
     groups[currentGroup].skaters = groups[currentGroup].skaters.filter(n=>n!==name);
@@ -1341,7 +1321,7 @@ function addManual(){
    RESET
 =================================================== */
 function resetGroup(){
-  showConfirm(Reset the ${currentGroup} group?, (yes)=>{
+  showConfirm(`Reset the ${currentGroup} group?`, (yes)=>{
     if(!yes) return;
     groups[currentGroup] = { skaters: [], history: {} };
     saveData();
@@ -1384,11 +1364,11 @@ function saveNewDistance(){
     closeModal("addDistanceModal");
 
     loadGroupTable();
-    toast(Distance ${label} added.);
+    toast(`Distance ${label} added.`);
   };
 
   if(exists){
-    showConfirm("${base}" already exists. Add another ${base}?, (yes)=>{
+    showConfirm(`"${base}" already exists. Add another ${base}?`, (yes)=>{
       if(!yes) return;
       doAdd();
     });
@@ -1404,14 +1384,14 @@ function openManageDistances(){
   distances.forEach((d, idx)=>{
     const row = document.createElement("div");
     row.className = "distanceRow";
-    row.innerHTML = 
+    row.innerHTML = `
       <div style="display:flex; gap:10px; align-items:center;">
         <div style="font-weight:900; opacity:.9;">#${idx+1}</div>
         <input type="text" value="${escapeHtml(d)}" data-index="${idx}"
                oninput="this.value=this.value.replace(/[^0-9 ()]/g,'');" />
       </div>
       <button class="btn btnDanger" style="height:40px;" onclick="deleteDistance(${idx})">Delete</button>
-    ;
+    `;
     list.appendChild(row);
   });
 
@@ -1443,7 +1423,7 @@ function saveManagedDistances(){
   const normalized = raw.map(v=>{
     const base = String(v).trim().match(/^(\d+)/)?.[1] || String(v).trim();
     used[base] = (used[base] || 0) + 1;
-    return used[base] === 1 ? base : ${base} (${used[base]});
+    return used[base] === 1 ? base : `${base} (${used[base]})`;
   });
 
   distances = normalized;
@@ -1536,7 +1516,7 @@ function uploadExcel(){
       }else{
         saveData();
         loadGroupTable();
-        toast(Added ${addedCount} skaters to ${detectedGroup}.);
+        toast(`Added ${addedCount} skaters to ${detectedGroup}.`);
       }
     }catch(err){
       console.error(err);
@@ -1572,3 +1552,4 @@ loadGroupTable();
 
 </body>
 </html>
+
