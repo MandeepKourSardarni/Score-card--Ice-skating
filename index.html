@@ -1477,171 +1477,158 @@ function uploadExcel(){
   if(!file){ toast("Please choose an Excel file."); return; }
 
   const reader = new FileReader();
-
-  reader.onerror = () => {
-    console.error("FileReader error:", reader.error);
-    toast("Could not read the file from your device. Try re-downloading the Excel.");
-  };
-
   reader.onload = function(e){
     try{
       const data = new Uint8Array(e.target.result);
-      const workbook = XLSX.read(data, { type:'array' });
+      const workbook = XLSX.read(data, {type:'array'});
 
-      const norm = (v)=> (v===undefined || v===null) ? "" : String(v).trim();
-      const upper = (v)=> norm(v).toUpperCase();
+      const sheetNames = ["Club","Clubs","Divisions"];
+      let headingText = "";
 
-      function isNameChunk(s){
-        s = norm(s);
-        if(!s) return false;
-        if(/[^A-Za-zÀ-ÿ '\-]/.test(s)) return false;
-        if(s.length < 2) return false;
-        return true;
+      for(const s of sheetNames){
+        const sh = workbook.Sheets[s];
+        if(!sh) continue;
+        const a1 = sh["A1"] ? String(sh["A1"].v).trim() : "";
+        if(a1.length > 10){ headingText = a1; break; }
       }
 
-      function addSkaterToGroupReturn(name, group){
-        name = name.replace(/[0-9]/g,"").replace(/\s+/g," ").trim();
-        if(!name) return false;
-        if(!groups[group]) groups[group] = { skaters: [], history: {} };
-
-        const G = groups[group];
-        if(!Array.isArray(G.skaters)) G.skaters = [];
-        if(typeof G.history !== "object" || !G.history) G.history = {};
-
-        if(!G.skaters.includes(name)){
-          G.skaters.push(name);
-          if(!G.history[name]) G.history[name] = { stack: [] };
-          if(!G.history[name].stack) G.history[name].stack = [];
-          return true;
-        }
-        return false;
+      const headingEl = document.getElementById("excelHeading");
+      if(headingText){
+        headingEl.textContent = headingText;
+        headingEl.style.display = "block";
+      } else {
+        headingEl.style.display = "none";
       }
 
-      function buildFromCols(row, firstCol, lastCol){
-        const first = norm(row[firstCol]);
-        if(!isNameChunk(first)) return null;
-
-        let lastParts = [];
-        for(let i=lastCol; i<row.length; i++){
-          const p = norm(row[i]);
-          if(!p) break;
-          if(!isNameChunk(p)) break;
-          lastParts.push(p);
-        }
-        if(lastParts.length === 0) return null;
-
-        return (first + " " + lastParts.join(" ")).replace(/\s+/g," ").trim();
+      const sheet = workbook.Sheets["Divisions"];
+      if(!sheet){
+        toast("Excel format not expected (missing 'Divisions' sheet).");
+        return;
       }
 
-      function buildByScan(row){
-        const nonEmpty = row.map(norm).filter(Boolean);
+      const rows = XLSX.utils.sheet_to_json(sheet, {header:1});
 
-        // simple 2-column (First|Last)
-        if(nonEmpty.length === 2 && isNameChunk(nonEmpty[0]) && isNameChunk(nonEmpty[1])){
-          return (nonEmpty[0] + " " + nonEmpty[1]).replace(/\s+/g," ").trim();
-        }
-
-        // scan adjacent cells
-        for(let i=0;i<row.length-1;i++){
-          const a = norm(row[i]);
-          const b = norm(row[i+1]);
-          if(isNameChunk(a) && isNameChunk(b)){
-            let lastParts=[b];
-            for(let j=i+2;j<row.length;j++){
-              const p = norm(row[j]);
-              if(!p) break;
-              if(!isNameChunk(p)) break;
-              lastParts.push(p);
-            }
-            return (a + " " + lastParts.join(" ")).replace(/\s+/g," ").trim();
-          }
-        }
-
-        // full name in one cell
-        const oneCell = row.map(norm).find(x => isNameChunk(x) && x.split(/\s+/).length >= 2);
-        return oneCell || null;
-      }
-
-      function detectHeader(row){
-        const up = row.map(c => upper(c));
-        const f = up.findIndex(x => x.includes("FIRST") && x.includes("NAME"));
-        const l = up.findIndex(x => x.includes("LAST")  && x.includes("NAME"));
-        if(f !== -1 && l !== -1) return { f, l };
-        return null;
-      }
-
-      function detectGroup(row){
-        for(const c of row){
-          const G = upper(c);
-          if(validGroups.includes(G)){
-            return G.charAt(0) + G.slice(1).toLowerCase();
-          }
-        }
-        return null;
-      }
-
-      // ✅ Scan only likely sheets first (keeps it stable)
-      const preferred = ["Divisions", "Division", "Entries", "Entry", "Skaters", "Roster"];
-      const sheetsToTry = [
-        ...preferred.filter(n => workbook.SheetNames.includes(n)),
-        ...workbook.SheetNames.filter(n => !preferred.includes(n))
-      ];
-
-      let added = 0;
+      // ✅ Start with current group as fallback so early rows never get skipped
       let detectedGroup = currentGroup;
 
-      for(const sheetName of sheetsToTry){
-        // skip very weird/empty names
-        if(!sheetName || typeof sheetName !== "string") continue;
+      // ✅ Track unique additions (prevents double counting)
+      const addedKeys = new Set();
+      let addedCount = 0;
 
-        try{
-          const sheet = workbook.Sheets[sheetName];
-          if(!sheet) continue;
+      // helper: normalize
+      const norm = (v)=> (v===undefined || v===null) ? "" : String(v).trim();
 
-          const rows = XLSX.utils.sheet_to_json(sheet, { header:1, defval:"" });
-          if(!rows || !rows.length) continue;
+      // ✅ helper: allow multi-part last names by reading extra columns
+      function buildNameFromRow(row){
+        // Your original source columns:
+        // first name often around B/C/D and last around C/D/E
+        const c1 = norm(row[1]);
+        const c2 = norm(row[2]);
+        const c3 = norm(row[3]);
+        const c4 = norm(row[4]);
+        const c5 = norm(row[5]); // ✅ extra spillover support
+        const c6 = norm(row[6]); // ✅ extra spillover support
 
-          let firstCol = null, lastCol = null;
+        // Skip header-ish rows
+        const combined = ( [c1,c2,c3,c4].join(" ").toUpperCase() ).replace(/\s+/g," ").trim();
+        const headerBlacklist = ["FIRST","LAST","FULL","NAME","SKATER","ATHLETE","COMPETITOR","PARTICIPANT"];
+        if(headerBlacklist.some(h=>combined.includes(h))) return null;
 
-          for(const row of rows){
-            if(!row || row.every(c => !norm(c))) continue;
+        // ✅ case 1: First in c1, last begins at c2 and may continue into c3/c4...
+        if(isName(c1) && isName(c2)){
+          let lastParts = [c2];
 
-            const g = detectGroup(row);
-            if(g){ detectedGroup = g; continue; }
+          // include extra parts if they look like name parts (spaces/hyphen/apostrophe)
+          // NOTE: use your isName() for each part if you want strictness; this is safer:
+          const extra = [c3,c4,c5,c6];
+          for(const p of extra){
+            if(!p) break;
+            // stop if it looks like a non-name token
+            if(/[^A-Za-zÀ-ÿ '\-]/.test(p)) break;
+            lastParts.push(p);
+          }
+          return (c1 + " " + lastParts.join(" ")).replace(/\s+/g," ").trim();
+        }
 
-            const hdr = detectHeader(row);
-            if(hdr){ firstCol = hdr.f; lastCol = hdr.l; continue; }
+        // ✅ case 2: shifted by one column
+        if(isName(c2) && isName(c3)){
+          let lastParts = [c3];
+          const extra = [c4,c5,c6];
+          for(const p of extra){
+            if(!p) break;
+            if(/[^A-Za-zÀ-ÿ '\-]/.test(p)) break;
+            lastParts.push(p);
+          }
+          return (c2 + " " + lastParts.join(" ")).replace(/\s+/g," ").trim();
+        }
 
-            let name = null;
-            if(firstCol !== null && lastCol !== null){
-              name = buildFromCols(row, firstCol, lastCol);
-            }
-            if(!name) name = buildByScan(row);
+        // ✅ case 3: shifted again
+        if(isName(c3) && isName(c4)){
+          let lastParts = [c4];
+          const extra = [c5,c6];
+          for(const p of extra){
+            if(!p) break;
+            if(/[^A-Za-zÀ-ÿ '\-]/.test(p)) break;
+            lastParts.push(p);
+          }
+          return (c3 + " " + lastParts.join(" ")).replace(/\s+/g," ").trim();
+        }
 
-            if(name){
-              const groupToUse = detectedGroup || currentGroup;
-              if(addSkaterToGroupReturn(name, groupToUse)) added++;
+        return null;
+      }
+
+      // ✅ group detection: still uses column H, but also checks nearby cells
+      function detectGroupFromRow(row){
+        // prefer your original column H first
+        const candidates = [row[7], row[6], row[8]]; // a bit more tolerant
+        for(const c of candidates){
+          if(typeof c === "string"){
+            const G = c.trim().toUpperCase();
+            if(validGroups.includes(G)){
+              return G.charAt(0) + G.slice(1).toLowerCase();
             }
           }
-        }catch(sheetErr){
-          // ✅ don’t fail whole upload if one sheet is weird
-          console.warn("Skipping sheet due to error:", sheetName, sheetErr);
+        }
+        return null;
+      }
+
+      for(let r=0; r<rows.length; r++){
+        const row = rows[r];
+        if(!row) continue;
+
+        // update detectedGroup if we see a marker
+        const g = detectGroupFromRow(row);
+        if(g){
+          detectedGroup = g;
           continue;
+        }
+
+        const name = buildNameFromRow(row);
+        if(name){
+          const clean = name.replace(/[0-9]/g,"").replace(/\s+/g," ").trim();
+          const key = detectedGroup + "||" + clean;
+
+          if(!addedKeys.has(key)){
+            addedKeys.add(key);
+            addSkaterToGroup(clean, detectedGroup);
+            addedCount++;
+          }
         }
       }
 
-      saveData();
-      loadGroupTable();
-
-      toast(`Uploaded ${added} names (new additions).`);
-      console.log("Upload complete. New names added:", added);
+      if(addedCount === 0){
+        toast("Excel looks glitchy or not in expected format. Try again or add names manually.");
+      }else{
+        saveData();
+        loadGroupTable();
+        toast(`Added ${addedCount} skaters across groups.`);
+      }
 
     }catch(err){
-      console.error("Upload failed:", err);
-      toast("Upload failed due to a script error. Open Console (F12) to see details.");
+      console.error(err);
+      toast("Could not read this Excel file. Try a different file.");
     }
   };
-
   reader.readAsArrayBuffer(file);
 }
 
