@@ -1472,38 +1472,42 @@ function saveManagedDistances(){
    EXCEL UPLOAD function
 =================================================== */
 
-
 function uploadExcel(){
   const file = document.getElementById("excelFile").files[0];
   if(!file){ toast("Please choose an Excel file."); return; }
 
   const reader = new FileReader();
+
+  reader.onerror = () => {
+    console.error("FileReader error:", reader.error);
+    toast("Could not read the file from your device. Try re-downloading the Excel.");
+  };
+
   reader.onload = function(e){
     try{
       const data = new Uint8Array(e.target.result);
-      const workbook = XLSX.read(data, {type:'array'});
+      const workbook = XLSX.read(data, { type:'array' });
 
-      // Helpers
       const norm = (v)=> (v===undefined || v===null) ? "" : String(v).trim();
       const upper = (v)=> norm(v).toUpperCase();
 
-      // More tolerant "name-ish" check
       function isNameChunk(s){
         s = norm(s);
         if(!s) return false;
-        // allow letters, accents, space, apostrophe, hyphen
         if(/[^A-Za-zÀ-ÿ '\-]/.test(s)) return false;
-        // allow short names like Xu, Du, Ma
         if(s.length < 2) return false;
         return true;
       }
 
-      // Return true if name was newly added
       function addSkaterToGroupReturn(name, group){
         name = name.replace(/[0-9]/g,"").replace(/\s+/g," ").trim();
         if(!name) return false;
+        if(!groups[group]) groups[group] = { skaters: [], history: {} };
 
         const G = groups[group];
+        if(!Array.isArray(G.skaters)) G.skaters = [];
+        if(typeof G.history !== "object" || !G.history) G.history = {};
+
         if(!G.skaters.includes(name)){
           G.skaters.push(name);
           if(!G.history[name]) G.history[name] = { stack: [] };
@@ -1513,14 +1517,12 @@ function uploadExcel(){
         return false;
       }
 
-      // Build name from a row using (firstCol,lastCol) + allow last name spillover
       function buildFromCols(row, firstCol, lastCol){
         const first = norm(row[firstCol]);
         if(!isNameChunk(first)) return null;
 
-        // last name might be split into multiple columns
         let lastParts = [];
-        for(let i = lastCol; i < row.length; i++){
+        for(let i=lastCol; i<row.length; i++){
           const p = norm(row[i]);
           if(!p) break;
           if(!isNameChunk(p)) break;
@@ -1531,10 +1533,10 @@ function uploadExcel(){
         return (first + " " + lastParts.join(" ")).replace(/\s+/g," ").trim();
       }
 
-      // Fallback: find 2 consecutive name-ish cells anywhere in the row
       function buildByScan(row){
-        // sometimes the sheet is just 2 columns: First | Last
         const nonEmpty = row.map(norm).filter(Boolean);
+
+        // simple 2-column (First|Last)
         if(nonEmpty.length === 2 && isNameChunk(nonEmpty[0]) && isNameChunk(nonEmpty[1])){
           return (nonEmpty[0] + " " + nonEmpty[1]).replace(/\s+/g," ").trim();
         }
@@ -1544,7 +1546,6 @@ function uploadExcel(){
           const a = norm(row[i]);
           const b = norm(row[i+1]);
           if(isNameChunk(a) && isNameChunk(b)){
-            // allow extra last-name parts after b
             let lastParts=[b];
             for(let j=i+2;j<row.length;j++){
               const p = norm(row[j]);
@@ -1556,21 +1557,19 @@ function uploadExcel(){
           }
         }
 
-        // sometimes full name is in one cell
+        // full name in one cell
         const oneCell = row.map(norm).find(x => isNameChunk(x) && x.split(/\s+/).length >= 2);
         return oneCell || null;
       }
 
-      // Detect header positions in a row (more tolerant than exact match)
       function detectHeader(row){
         const up = row.map(c => upper(c));
         const f = up.findIndex(x => x.includes("FIRST") && x.includes("NAME"));
         const l = up.findIndex(x => x.includes("LAST")  && x.includes("NAME"));
-        if(f !== -1 && l !== -1) return {f, l};
+        if(f !== -1 && l !== -1) return { f, l };
         return null;
       }
 
-      // Detect group marker anywhere in row
       function detectGroup(row){
         for(const c of row){
           const G = upper(c);
@@ -1581,56 +1580,53 @@ function uploadExcel(){
         return null;
       }
 
-      // ✅ MAIN: scan ALL sheets
-      let added = 0;
-      const perGroup = {};
-      groupNames.forEach(g=>perGroup[g]=0);
+      // ✅ Scan only likely sheets first (keeps it stable)
+      const preferred = ["Divisions", "Division", "Entries", "Entry", "Skaters", "Roster"];
+      const sheetsToTry = [
+        ...preferred.filter(n => workbook.SheetNames.includes(n)),
+        ...workbook.SheetNames.filter(n => !preferred.includes(n))
+      ];
 
+      let added = 0;
       let detectedGroup = currentGroup;
 
-      for(const sheetName of workbook.SheetNames){
-        const sheet = workbook.Sheets[sheetName];
-        if(!sheet) continue;
+      for(const sheetName of sheetsToTry){
+        // skip very weird/empty names
+        if(!sheetName || typeof sheetName !== "string") continue;
 
-        const rows = XLSX.utils.sheet_to_json(sheet, {header:1});
-        if(!rows || rows.length === 0) continue;
+        try{
+          const sheet = workbook.Sheets[sheetName];
+          if(!sheet) continue;
 
-        let firstCol = null;
-        let lastCol  = null;
+          const rows = XLSX.utils.sheet_to_json(sheet, { header:1, defval:"" });
+          if(!rows || !rows.length) continue;
 
-        for(const row of rows){
-          if(!row || row.every(c => !norm(c))) continue;
+          let firstCol = null, lastCol = null;
 
-          // update group if we see marker
-          const g = detectGroup(row);
-          if(g){ detectedGroup = g; continue; }
+          for(const row of rows){
+            if(!row || row.every(c => !norm(c))) continue;
 
-          // update header cols if we see header
-          const hdr = detectHeader(row);
-          if(hdr){ firstCol = hdr.f; lastCol = hdr.l; continue; }
+            const g = detectGroup(row);
+            if(g){ detectedGroup = g; continue; }
 
-          // skip repeated header-ish rows
-          const joined = row.map(upper).join(" ");
-          if(joined.includes("FIRST") && joined.includes("LAST") && joined.includes("NAME")) continue;
+            const hdr = detectHeader(row);
+            if(hdr){ firstCol = hdr.f; lastCol = hdr.l; continue; }
 
-          // try name extraction
-          let name = null;
-          if(firstCol !== null && lastCol !== null){
-            name = buildFromCols(row, firstCol, lastCol);
-          }
-          if(!name){
-            name = buildByScan(row);
-          }
+            let name = null;
+            if(firstCol !== null && lastCol !== null){
+              name = buildFromCols(row, firstCol, lastCol);
+            }
+            if(!name) name = buildByScan(row);
 
-          if(name){
-            // use currently detected group (fallback is currentGroup)
-            const groupToUse = detectedGroup || currentGroup;
-            const isNew = addSkaterToGroupReturn(name, groupToUse);
-            if(isNew){
-              added++;
-              if(perGroup[groupToUse] !== undefined) perGroup[groupToUse] += 1;
+            if(name){
+              const groupToUse = detectedGroup || currentGroup;
+              if(addSkaterToGroupReturn(name, groupToUse)) added++;
             }
           }
+        }catch(sheetErr){
+          // ✅ don’t fail whole upload if one sheet is weird
+          console.warn("Skipping sheet due to error:", sheetName, sheetErr);
+          continue;
         }
       }
 
@@ -1638,11 +1634,11 @@ function uploadExcel(){
       loadGroupTable();
 
       toast(`Uploaded ${added} names (new additions).`);
-      console.log("Upload breakdown per group:", perGroup);
+      console.log("Upload complete. New names added:", added);
 
     }catch(err){
-      console.error(err);
-      toast("Could not read this Excel file. Try a different file.");
+      console.error("Upload failed:", err);
+      toast("Upload failed due to a script error. Open Console (F12) to see details.");
     }
   };
 
